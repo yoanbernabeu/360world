@@ -306,6 +306,15 @@ import BaseLayout from "../layouts/BaseLayout.astro";
             aria-label="Configured">✓</span
           >
         </button>
+        <button
+          type="button"
+          role="tab"
+          data-settings-tab="backup"
+          aria-selected="false"
+          class="settings-tab -mb-px flex items-center gap-2 border-b-2 border-transparent px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-faint)] transition hover:text-[var(--color-ink)]"
+        >
+          <span>Backup</span>
+        </button>
       </div>
 
       <!-- OpenAI section -->
@@ -514,6 +523,58 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         </form>
       </section>
 
+      <!-- Backup section -->
+      <section
+        data-tab-panel="backup"
+        class="mt-4 border-l-2 border-[var(--color-rule)] bg-[var(--color-bg)]/60 px-4 py-4"
+      >
+        <p class="kicker">Backup / restore</p>
+        <p class="mt-1 text-[13px] leading-relaxed text-[var(--color-ink-soft)]">
+          Your settings live in the browser's IndexedDB, which is <strong
+            >scoped to the origin</strong
+          >
+          (domain + port). Switching between <code class="font-mono text-[12px]">netlify.app</code> and
+          your custom domain, or visiting a deploy preview, means a different storage. Export a JSON file
+          here to move your keys and GitHub config across browsers, devices or origins.
+        </p>
+        <p
+          class="mt-3 border-l-2 border-[var(--color-flame)] bg-[var(--color-flame)]/5 px-3 py-2 text-[12px] leading-relaxed text-[var(--color-ink)]"
+        >
+          ⚠ The export contains your API keys in clear text. Treat the file like a password — don't
+          commit it, don't email it, don't drop it in a shared folder.
+        </p>
+        <div class="mt-4 flex flex-wrap gap-3">
+          <button
+            id="backup-export-btn"
+            type="button"
+            class="inline-flex items-center gap-2 bg-[var(--color-ink)] px-5 py-2 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-bg)] transition hover:bg-[var(--color-flame)]"
+          >
+            ↓ Export settings
+          </button>
+          <label
+            class="inline-flex cursor-pointer items-center gap-2 border border-[var(--color-rule)] bg-transparent px-5 py-2 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-ink)] transition hover:border-[var(--color-flame)] hover:text-[var(--color-flame)]"
+          >
+            ↑ Import settings
+            <input
+              id="backup-import-input"
+              type="file"
+              accept="application/json,.json"
+              class="hidden"
+            />
+          </label>
+        </div>
+        <p
+          id="backup-feedback"
+          class="mt-3 hidden border-l-2 border-emerald-500 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-400"
+        >
+        </p>
+        <p
+          id="backup-error"
+          class="mt-3 hidden border-l-2 border-[var(--color-flame)] bg-[var(--color-flame)]/10 px-3 py-2 text-xs text-[var(--color-flame)]"
+        >
+        </p>
+      </section>
+
       <p
         class="mt-5 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-ink-faint)]"
       >
@@ -548,6 +609,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       imagesStore,
       openaiApiKeyStore,
       preferencesStore,
+      settingsBackup,
       type Provider,
       type StoredImage,
     } from "../lib/storage";
@@ -620,6 +682,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       githubProfileLink: $<HTMLAnchorElement>("github-profile-link"),
       githubProfileCopy: $<HTMLButtonElement>("github-profile-copy"),
       myGalleryLink: $<HTMLAnchorElement>("my-gallery-link"),
+      backupExport: $<HTMLButtonElement>("backup-export-btn"),
+      backupImport: $<HTMLInputElement>("backup-import-input"),
+      backupFeedback: $<HTMLParagraphElement>("backup-feedback"),
+      backupError: $<HTMLParagraphElement>("backup-error"),
       githubError: $<HTMLParagraphElement>("github-error"),
       githubSuccess: $<HTMLParagraphElement>("github-success"),
       githubForget: $<HTMLButtonElement>("github-forget-btn"),
@@ -629,16 +695,17 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       toast: $<HTMLDivElement>("toast"),
     };
 
-    type SettingsTab = "openai" | "replicate" | "github";
+    type SettingsTab = "openai" | "replicate" | "github" | "backup";
+    type CheckedTab = "openai" | "replicate" | "github";
     const settingsTabBtns = Array.from(
       document.querySelectorAll<HTMLButtonElement>("[data-settings-tab]"),
     );
     const settingsTabPanels = Array.from(
       document.querySelectorAll<HTMLElement>("[data-tab-panel]"),
     );
-    const settingsTabChecks = new Map<SettingsTab, HTMLElement>();
+    const settingsTabChecks = new Map<CheckedTab, HTMLElement>();
     for (const check of document.querySelectorAll<HTMLElement>("[data-tab-check]")) {
-      settingsTabChecks.set(check.dataset.tabCheck as SettingsTab, check);
+      settingsTabChecks.set(check.dataset.tabCheck as CheckedTab, check);
     }
 
     const providerTabs = Array.from(
@@ -1275,6 +1342,54 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       await refreshGithubProfileUI();
       showToast("GitHub config removed from this browser.");
     });
+    async function handleExportBackup(): Promise<void> {
+      els.backupError.classList.add("hidden");
+      els.backupFeedback.classList.add("hidden");
+      try {
+        const data = await settingsBackup.export();
+        const json = JSON.stringify(data, null, 2);
+        const blob = new Blob([json], { type: "application/json" });
+        const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+        downloadBlob(blob, `360world-settings-${stamp}.json`);
+        els.backupFeedback.textContent =
+          "Settings exported. Keep the file private — it contains your API keys.";
+        els.backupFeedback.classList.remove("hidden");
+      } catch (err) {
+        els.backupError.textContent = (err as Error).message ?? "Export failed.";
+        els.backupError.classList.remove("hidden");
+      }
+    }
+
+    async function handleImportBackup(event: Event): Promise<void> {
+      const input = event.target as HTMLInputElement;
+      const file = input.files?.[0];
+      input.value = "";
+      if (!file) return;
+      els.backupError.classList.add("hidden");
+      els.backupFeedback.classList.add("hidden");
+      try {
+        const text = await file.text();
+        const parsed: unknown = JSON.parse(text);
+        await settingsBackup.import(parsed);
+        await alignProviderWithAvailableKeys();
+        applyProviderUI();
+        await refreshProviderSwitchVisibility();
+        await refreshSettingsTabChecks();
+        await refreshGithubProfileUI();
+        await refreshGallery();
+        els.openaiSize.value = await preferencesStore.getOpenAISize();
+        els.openaiQuality.value = await preferencesStore.getOpenAIQuality();
+        els.backupFeedback.textContent = "Settings imported successfully.";
+        els.backupFeedback.classList.remove("hidden");
+        showToast("Settings imported.");
+      } catch (err) {
+        els.backupError.textContent = (err as Error).message ?? "Could not import this file.";
+        els.backupError.classList.remove("hidden");
+      }
+    }
+
+    els.backupExport.addEventListener("click", () => void handleExportBackup());
+    els.backupImport.addEventListener("change", (e) => void handleImportBackup(e));
     els.githubProfileCopy.addEventListener("click", async () => {
       const url = els.githubProfileLink.textContent?.trim();
       if (!url) return;

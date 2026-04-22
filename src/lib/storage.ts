@@ -188,3 +188,67 @@ export const githubConfigStore = {
     await Promise.all([del(GITHUB_USERNAME_FIELD, githubDb), del(GITHUB_PAT_FIELD, githubDb)]);
   },
 };
+
+export type SettingsBackup = {
+  version: 1;
+  openaiKey: string | null;
+  replicateKey: string | null;
+  github: GithubConfig | null;
+  preferences: {
+    provider: Provider;
+    openaiSize: OpenAIImageSize;
+    openaiQuality: OpenAIImageQuality;
+  };
+};
+
+export const settingsBackup = {
+  async export(): Promise<SettingsBackup> {
+    const [openaiKey, replicateKey, github, provider, openaiSize, openaiQuality] =
+      await Promise.all([
+        openaiApiKeyStore.get(),
+        apiKeyStore.get(),
+        githubConfigStore.get(),
+        preferencesStore.getProvider(),
+        preferencesStore.getOpenAISize(),
+        preferencesStore.getOpenAIQuality(),
+      ]);
+    return {
+      version: 1,
+      openaiKey,
+      replicateKey,
+      github,
+      preferences: { provider, openaiSize, openaiQuality },
+    };
+  },
+
+  async import(raw: unknown): Promise<void> {
+    const data = raw as Partial<SettingsBackup> | null;
+    if (!data || data.version !== 1) {
+      throw new Error("Unsupported backup file — expected version 1.");
+    }
+    if (typeof data.openaiKey === "string" && data.openaiKey.trim()) {
+      await openaiApiKeyStore.set(data.openaiKey);
+    }
+    if (typeof data.replicateKey === "string" && data.replicateKey.trim()) {
+      await apiKeyStore.set(data.replicateKey);
+    }
+    if (
+      data.github &&
+      typeof data.github.username === "string" &&
+      typeof data.github.pat === "string"
+    ) {
+      await githubConfigStore.set(data.github);
+    }
+    if (data.preferences) {
+      if (data.preferences.provider === "openai" || data.preferences.provider === "replicate") {
+        await preferencesStore.setProvider(data.preferences.provider);
+      }
+      if (typeof data.preferences.openaiSize === "string") {
+        await preferencesStore.setOpenAISize(data.preferences.openaiSize);
+      }
+      if (typeof data.preferences.openaiQuality === "string") {
+        await preferencesStore.setOpenAIQuality(data.preferences.openaiQuality);
+      }
+    }
+  },
+};

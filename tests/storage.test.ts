@@ -5,6 +5,7 @@ import {
   imagesStore,
   openaiApiKeyStore,
   preferencesStore,
+  settingsBackup,
   DEFAULT_PROVIDER,
   DEFAULT_OPENAI_QUALITY,
   DEFAULT_OPENAI_SIZE,
@@ -184,6 +185,71 @@ describe("imagesStore", () => {
 
   it("ignores setPublishedSlug on an unknown id", async () => {
     await expect(imagesStore.setPublishedSlug("missing", "any")).resolves.toBeUndefined();
+  });
+});
+
+describe("settingsBackup", () => {
+  it("exports null-valued fields when nothing is configured", async () => {
+    const snap = await settingsBackup.export();
+    expect(snap).toEqual({
+      version: 1,
+      openaiKey: null,
+      replicateKey: null,
+      github: null,
+      preferences: {
+        provider: DEFAULT_PROVIDER,
+        openaiSize: DEFAULT_OPENAI_SIZE,
+        openaiQuality: DEFAULT_OPENAI_QUALITY,
+      },
+    });
+  });
+
+  it("round-trips every store through export / import", async () => {
+    await openaiApiKeyStore.set("sk-openai");
+    await apiKeyStore.set("r8_replicate");
+    await githubConfigStore.set({ username: "alice", pat: "tok" });
+    await preferencesStore.setProvider("replicate");
+    await preferencesStore.setOpenAISize("3840x2160");
+    await preferencesStore.setOpenAIQuality("medium");
+
+    const snap = await settingsBackup.export();
+
+    // Wipe everything
+    await openaiApiKeyStore.clear();
+    await apiKeyStore.clear();
+    await githubConfigStore.clear();
+    await preferencesStore.setProvider(DEFAULT_PROVIDER);
+    await preferencesStore.setOpenAISize(DEFAULT_OPENAI_SIZE);
+    await preferencesStore.setOpenAIQuality(DEFAULT_OPENAI_QUALITY);
+
+    await settingsBackup.import(snap);
+
+    await expect(openaiApiKeyStore.get()).resolves.toBe("sk-openai");
+    await expect(apiKeyStore.get()).resolves.toBe("r8_replicate");
+    await expect(githubConfigStore.get()).resolves.toEqual({ username: "alice", pat: "tok" });
+    await expect(preferencesStore.getProvider()).resolves.toBe("replicate");
+    await expect(preferencesStore.getOpenAISize()).resolves.toBe("3840x2160");
+    await expect(preferencesStore.getOpenAIQuality()).resolves.toBe("medium");
+  });
+
+  it("rejects an unknown version", async () => {
+    await expect(settingsBackup.import({ version: 99 })).rejects.toThrow(/version/);
+    await expect(settingsBackup.import(null)).rejects.toThrow(/version/);
+  });
+
+  it("skips empty string keys gracefully", async () => {
+    await settingsBackup.import({
+      version: 1,
+      openaiKey: "",
+      replicateKey: null,
+      github: null,
+      preferences: {
+        provider: "openai",
+        openaiSize: "auto",
+        openaiQuality: "high",
+      },
+    });
+    await expect(openaiApiKeyStore.get()).resolves.toBeNull();
   });
 });
 

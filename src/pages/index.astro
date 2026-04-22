@@ -25,6 +25,24 @@ const examples = [
   "A frozen Saturn observatory looking back at the rings",
   "A library at the bottom of the sea, schools of fish drifting between shelves",
 ];
+
+const sharing = [
+  {
+    n: "01",
+    title: "Your own GitHub repo",
+    body: "Drop a Fine-grained PAT into Settings. Your worlds get committed to a public 360world-data repo you own — 100% your data, versioned in Git.",
+  },
+  {
+    n: "02",
+    title: "A gallery at your name",
+    body: "Visitors land on 360world.yoandev.co/u/<you> and see every world you've published, with thumbnails and prompts. No sign-up, no account — it's just your corner of the site.",
+  },
+  {
+    n: "03",
+    title: "A link anyone can open",
+    body: "Each world gets its own URL. Share it on socials, paste it in a message — opens a full 360° viewer with gyroscope on phones. No app to install.",
+  },
+];
 ---
 
 <BaseLayout>
@@ -175,6 +193,72 @@ const examples = [
       </div>
     </section>
 
+    <!-- Share -->
+    <section id="share" class="pt-20 sm:pt-28">
+      <hr class="hairline" />
+      <div class="grid gap-10 pt-12 sm:pt-16 lg:grid-cols-12 lg:gap-16">
+        <header class="lg:col-span-4">
+          <span class="kicker">Share</span>
+          <h2 class="mt-3 font-display text-4xl leading-[1.0] tracking-tight sm:text-5xl">
+            Your worlds,
+            <span class="italic text-[var(--color-flame)]">on the open web.</span>
+          </h2>
+          <p class="mt-5 max-w-sm text-[15px] leading-relaxed text-[var(--color-ink-soft)]">
+            Keep everything private — or flip a switch and publish a world to
+            <strong>your own GitHub repo</strong>. You get a gallery at your name and a link anyone
+            can open.
+          </p>
+          <p class="mt-4 max-w-sm text-[13px] leading-relaxed text-[var(--color-ink-faint)]">
+            No server of ours, no shared bucket. The repo is yours, the data is yours, delete it
+            whenever you want.
+          </p>
+        </header>
+
+        <ol class="space-y-px bg-[var(--color-rule)] lg:col-span-8">
+          {
+            sharing.map((s) => (
+              <li class="bg-[var(--color-bg)] p-6 sm:p-8">
+                <div class="flex items-baseline gap-6">
+                  <span class="font-mono text-sm text-[var(--color-flame)]">{s.n}</span>
+                  <div class="flex-1">
+                    <h3 class="font-display text-2xl leading-tight tracking-tight sm:text-3xl">
+                      {s.title}
+                    </h3>
+                    <p class="mt-2 text-[15px] leading-relaxed text-[var(--color-ink-soft)]">
+                      {s.body}
+                    </p>
+                  </div>
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+      <div
+        class="mt-10 flex flex-col items-start gap-3 border border-dashed border-[var(--color-rule)] bg-[var(--color-bg-soft)]/40 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+      >
+        <div>
+          <p class="kicker">Example</p>
+          <p
+            class="mt-1 font-mono text-[13px] text-[var(--color-ink)] [overflow-wrap:anywhere] sm:text-[14px]"
+          >
+            <a
+              href="/u/yoanbernabeu"
+              class="underline decoration-[var(--color-rule)] underline-offset-[5px] transition hover:text-[var(--color-flame)] hover:decoration-[var(--color-flame)]"
+            >
+              360world.yoandev.co/u/yoanbernabeu
+            </a>
+          </p>
+        </div>
+        <a
+          href="/u/yoanbernabeu"
+          class="inline-flex shrink-0 items-center gap-2 bg-[var(--color-ink)] px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-bg)] transition hover:bg-[var(--color-flame)]"
+        >
+          See a live gallery →
+        </a>
+      </div>
+    </section>
+
     <!-- Privacy / what you'll need -->
     <section class="pt-20 sm:pt-28">
       <hr class="hairline" />
@@ -222,6 +306,10 @@ const examples = [
             <li class="flex gap-3">
               <span class="text-[var(--color-flame)]">·</span>
               Nothing logged on our side — not your keys, not your prompts.
+            </li>
+            <li class="flex gap-3">
+              <span class="text-[var(--color-flame)]">·</span>
+              Opt-in publishing to <em>your</em> GitHub — nothing goes anywhere unless you tell it to.
             </li>
             <li class="flex gap-3">
               <span class="text-[var(--color-flame)]">·</span>
