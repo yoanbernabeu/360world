@@ -1,0 +1,152 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const features = [
+  {
+    title: "Type a prompt",
+    body: "Describe a place — real, surreal, impossible — and Replicate's gpt-image-2 paints it as a full equirectangular panorama.",
+    icon: "✦",
+  },
+  {
+    title: "Step inside",
+    body: "Every result opens in an interactive 360° viewer. Drag, zoom, or tilt your phone — your gyroscope is invited too.",
+    icon: "◐",
+  },
+  {
+    title: "Stays on your device",
+    body: "Prompts, images and your API key live in your browser's IndexedDB. No accounts, no servers, no tracking.",
+    icon: "⌂",
+  },
+];
+---
+
+<BaseLayout>
+  <main class="mx-auto max-w-6xl px-6 pb-24 pt-10 sm:pt-16">
+    <header class="flex items-center justify-between gap-4">
+      <a href="/" class="flex items-center gap-2 text-lg font-semibold tracking-tight">
+        <span
+          class="inline-block size-7 rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[#3a1fb0] shadow-[0_0_30px_rgba(124,92,255,0.55)]"
+        ></span>
+        360World
+      </a>
+      <nav class="flex items-center gap-3 text-sm text-[var(--color-fg-muted)]">
+        <a
+          class="hidden hover:text-white sm:inline"
+          href="https://replicate.com/openai/gpt-image-2"
+          target="_blank"
+          rel="noreferrer noopener">Model</a
+        >
+        <a
+          class="rounded-full bg-[var(--color-accent)] px-4 py-2 font-medium text-white shadow-lg shadow-[var(--color-accent)]/30 transition hover:bg-[var(--color-accent-strong)]"
+          href="/app">Open the app →</a
+        >
+      </nav>
+    </header>
+
+    <section class="mt-20 sm:mt-28">
+      <p
+        class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium tracking-wide text-[var(--color-fg-muted)] backdrop-blur"
+      >
+        <span class="size-1.5 rounded-full bg-[var(--color-accent)]"></span>
+        Bring your own Replicate key · No backend
+      </p>
+      <h1
+        class="mt-6 max-w-3xl text-balance text-5xl font-semibold leading-[1.05] tracking-tight sm:text-7xl"
+      >
+        Conjure entire worlds, then
+        <span
+          class="bg-gradient-to-br from-[#a48bff] via-[#7c5cff] to-[#3a1fb0] bg-clip-text text-transparent"
+          >step inside.</span
+        >
+      </h1>
+      <p class="mt-6 max-w-2xl text-pretty text-lg text-[var(--color-fg-muted)] sm:text-xl">
+        360World turns a one-line prompt into a full 360° panorama you can explore from your
+        browser, your phone — even with your gyroscope. Everything happens client-side.
+      </p>
+      <div class="mt-8 flex flex-wrap items-center gap-3">
+        <a
+          href="/app"
+          class="rounded-full bg-[var(--color-accent)] px-6 py-3 text-base font-medium text-white shadow-lg shadow-[var(--color-accent)]/30 transition hover:bg-[var(--color-accent-strong)]"
+        >
+          Generate your first world
+        </a>
+        <a
+          href="#how-it-works"
+          class="rounded-full border border-white/10 bg-white/5 px-6 py-3 text-base font-medium text-white/90 backdrop-blur transition hover:bg-white/10"
+        >
+          How it works
+        </a>
+      </div>
+    </section>
+
+    <section id="how-it-works" class="mt-24 grid gap-5 sm:mt-32 sm:grid-cols-3">
+      {
+        features.map((feature) => (
+          <article class="rounded-3xl border border-white/10 bg-[var(--color-bg-soft)]/80 p-6 backdrop-blur transition hover:border-white/20">
+            <div class="flex size-10 items-center justify-center rounded-2xl bg-white/5 text-xl text-[var(--color-accent)]">
+              {feature.icon}
+            </div>
+            <h3 class="mt-5 text-lg font-semibold">{feature.title}</h3>
+            <p class="mt-2 text-sm leading-relaxed text-[var(--color-fg-muted)]">{feature.body}</p>
+          </article>
+        ))
+      }
+    </section>
+
+    <section
+      class="mt-20 grid gap-10 rounded-3xl border border-white/10 bg-[var(--color-bg-soft)]/60 p-8 backdrop-blur sm:p-12 lg:grid-cols-[1.1fr_0.9fr]"
+    >
+      <div>
+        <h2 class="text-3xl font-semibold tracking-tight sm:text-4xl">What you'll need</h2>
+        <p class="mt-4 text-[var(--color-fg-muted)]">
+          A Replicate account and an API token. Replicate bills per generation — typically a few US
+          cents per image — directly to your account. 360World never sees your token: it goes from
+          your browser to a thin proxy and straight to Replicate.
+        </p>
+        <ol class="mt-6 space-y-3 text-sm text-[var(--color-fg-muted)]">
+          <li class="flex gap-3">
+            <span class="text-[var(--color-accent)]">1.</span> Create a free account at
+            <a
+              class="underline decoration-dotted underline-offset-4 hover:text-white"
+              href="https://replicate.com"
+              target="_blank"
+              rel="noreferrer noopener">replicate.com</a
+            >.
+          </li>
+          <li class="flex gap-3">
+            <span class="text-[var(--color-accent)]">2.</span> Generate a token at
+            <a
+              class="underline decoration-dotted underline-offset-4 hover:text-white"
+              href="https://replicate.com/account/api-tokens"
+              target="_blank"
+              rel="noreferrer noopener">/account/api-tokens</a
+            >.
+          </li>
+          <li class="flex gap-3">
+            <span class="text-[var(--color-accent)]">3.</span> Paste it once in 360World — it's stored
+            locally in IndexedDB.
+          </li>
+        </ol>
+      </div>
+      <aside class="rounded-2xl border border-white/10 bg-black/30 p-6 text-sm">
+        <h3 class="text-base font-semibold text-white">Privacy at a glance</h3>
+        <ul class="mt-4 space-y-3 text-[var(--color-fg-muted)]">
+          <li>· No analytics, no cookies, no tracking pixel.</li>
+          <li>· No database. Your gallery sits in your browser.</li>
+          <li>· The proxy function logs nothing — no key, no prompt.</li>
+          <li>· Open-source. Audit it on GitHub.</li>
+        </ul>
+        <p class="mt-5 text-xs text-amber-200/80">
+          ⚠ Avoid using a shared device — anyone with browser access can read the stored key.
+        </p>
+      </aside>
+    </section>
+
+    <footer
+      class="mt-20 flex flex-col items-center justify-between gap-3 text-xs text-[var(--color-fg-muted)] sm:flex-row"
+    >
+      <p>© {new Date().getFullYear()} 360World · MIT licensed</p>
+      <p>Built with Astro, Tailwind, Photo Sphere Viewer & Replicate.</p>
+    </footer>
+  </main>
+</BaseLayout>

@@ -1,0 +1,32 @@
+# build output
+dist/
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+*.log
+npm-debug.log*
+
+# environment
+.env
+.env.local
+.env.*.local
+
+# editors
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# os
+.DS_Store
+
+# netlify
+.netlify/
+
+# coverage
+coverage/
+
+# misc
+*.tsbuildinfo

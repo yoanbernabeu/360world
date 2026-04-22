@@ -1,0 +1,550 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="360World — generator">
+  <div class="mx-auto flex min-h-svh max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
+    <!-- Top bar -->
+    <header class="flex items-center justify-between gap-4">
+      <a href="/" class="flex items-center gap-2 text-base font-semibold tracking-tight">
+        <span
+          class="inline-block size-6 rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[#3a1fb0] shadow-[0_0_25px_rgba(124,92,255,0.55)]"
+        ></span>
+        360World
+      </a>
+      <div class="flex items-center gap-2">
+        <button
+          id="settings-btn"
+          type="button"
+          class="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/80 backdrop-blur transition hover:bg-white/10"
+        >
+          Settings
+        </button>
+      </div>
+    </header>
+
+    <!-- Prompt -->
+    <section
+      class="rounded-3xl border border-white/10 bg-[var(--color-bg-soft)]/80 p-4 backdrop-blur sm:p-6"
+    >
+      <form id="prompt-form" class="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+        <label for="prompt-input" class="sr-only">Describe the world you want to step into</label>
+        <textarea
+          id="prompt-input"
+          name="prompt"
+          rows="2"
+          required
+          maxlength="900"
+          placeholder="An abandoned space station orbiting a ringed planet, soft sunrise light…"
+          class="flex-1 resize-none rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-base text-white placeholder:text-white/30 focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30"
+        ></textarea>
+        <button
+          id="generate-btn"
+          type="submit"
+          class="group relative inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-[var(--color-accent)] px-5 py-3 text-base font-medium text-white shadow-lg shadow-[var(--color-accent)]/30 transition hover:bg-[var(--color-accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <span id="generate-label">Generate ✨</span>
+          <span
+            id="generate-spinner"
+            class="hidden size-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+          ></span>
+        </button>
+      </form>
+      <p class="mt-2 text-xs text-[var(--color-fg-muted)]">
+        Tip: keep it visual and spatial. The model is automatically nudged toward equirectangular
+        framing.
+      </p>
+    </section>
+
+    <!-- Viewer -->
+    <section
+      id="viewer-section"
+      class="relative aspect-[3/2] w-full overflow-hidden rounded-3xl border border-white/10 bg-black/60 shadow-2xl"
+    >
+      <div id="viewer" class="absolute inset-0" style="touch-action: none;"></div>
+      <div
+        id="viewer-empty"
+        class="absolute inset-0 flex flex-col items-center justify-center gap-3 p-8 text-center"
+      >
+        <div
+          class="size-16 rounded-full bg-gradient-to-br from-[var(--color-accent)]/40 to-transparent blur-xl"
+        >
+        </div>
+        <p class="text-lg font-medium text-white/80">Your panorama will appear here.</p>
+        <p class="max-w-md text-sm text-[var(--color-fg-muted)]">
+          Type a prompt above and tap <em>Generate</em>. Drag to look around. On mobile, tap the
+          gyroscope button to use motion.
+        </p>
+      </div>
+      <div
+        id="gyro-banner"
+        class="absolute right-3 top-3 hidden flex-col items-end gap-2 sm:items-start"
+      >
+        <button
+          id="gyro-btn"
+          type="button"
+          class="pointer-events-auto rounded-full bg-black/70 px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition hover:bg-black/90"
+        >
+          📱 Enable gyroscope
+        </button>
+      </div>
+      <div
+        id="viewer-meta"
+        class="pointer-events-none absolute bottom-0 left-0 right-0 hidden bg-gradient-to-t from-black/80 to-transparent p-4"
+      >
+        <p id="viewer-prompt" class="text-sm text-white/90 sm:text-base [overflow-wrap:anywhere]">
+        </p>
+        <div class="mt-2 flex flex-wrap items-center gap-2">
+          <button
+            id="download-btn"
+            type="button"
+            class="pointer-events-auto rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition hover:bg-white/20"
+          >
+            ⬇ Download
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Gallery -->
+    <section>
+      <div class="mb-3 flex items-end justify-between gap-3">
+        <h2 class="text-lg font-semibold tracking-tight">Your gallery</h2>
+        <button
+          id="clear-gallery-btn"
+          type="button"
+          class="hidden text-xs text-[var(--color-fg-muted)] underline-offset-4 hover:text-[var(--color-danger)] hover:underline"
+        >
+          Clear all
+        </button>
+      </div>
+      <div id="gallery" class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      </div>
+      <p
+        id="gallery-empty"
+        class="rounded-2xl border border-dashed border-white/10 p-6 text-center text-sm text-[var(--color-fg-muted)]"
+      >
+        Nothing yet — your generated worlds will land here.
+      </p>
+    </section>
+  </div>
+
+  <!-- API key modal -->
+  <div
+    id="key-modal"
+    aria-hidden="true"
+    class="fixed inset-0 z-40 hidden items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+  >
+    <div
+      class="w-full max-w-lg rounded-3xl border border-white/10 bg-[var(--color-bg-soft)] p-6 shadow-2xl sm:p-8"
+    >
+      <h2 class="text-xl font-semibold tracking-tight">Connect your Replicate key</h2>
+      <p class="mt-2 text-sm text-[var(--color-fg-muted)]">
+        360World is bring-your-own-key. Your token is stored in this browser only and sent straight
+        to Replicate via a thin CORS proxy. Get a token at
+        <a
+          class="text-[var(--color-accent)] underline decoration-dotted underline-offset-4"
+          href="https://replicate.com/account/api-tokens"
+          target="_blank"
+          rel="noreferrer noopener">replicate.com/account/api-tokens</a
+        >.
+      </p>
+      <form id="key-form" class="mt-5 flex flex-col gap-3">
+        <label for="key-input" class="text-xs font-medium uppercase tracking-wide text-white/60"
+          >API token</label
+        >
+        <input
+          id="key-input"
+          type="password"
+          autocomplete="off"
+          spellcheck="false"
+          required
+          placeholder="r8_..."
+          class="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 font-mono text-sm text-white focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30"
+        />
+        <p
+          id="key-error"
+          class="hidden rounded-xl border border-[var(--color-danger)]/40 bg-[var(--color-danger)]/10 px-3 py-2 text-xs text-[var(--color-danger)]"
+        >
+        </p>
+        <p class="text-xs text-amber-200/70">
+          ⚠ Stored locally in IndexedDB. Don't use this app on a shared device.
+        </p>
+        <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
+          <button
+            id="forget-key-btn"
+            type="button"
+            class="hidden text-xs text-[var(--color-fg-muted)] underline-offset-4 hover:text-[var(--color-danger)] hover:underline"
+          >
+            Forget my key
+          </button>
+          <div class="flex gap-2">
+            <button
+              id="key-cancel-btn"
+              type="button"
+              class="hidden rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm hover:bg-white/10"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              id="key-save-btn"
+              class="rounded-full bg-[var(--color-accent)] px-5 py-2 text-sm font-medium text-white transition hover:bg-[var(--color-accent-strong)] disabled:opacity-60"
+            >
+              Save & continue
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div
+    id="toast"
+    role="status"
+    aria-live="polite"
+    class="pointer-events-none fixed bottom-6 left-1/2 z-50 hidden -translate-x-1/2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-sm text-white shadow-2xl backdrop-blur"
+  >
+  </div>
+
+  <script>
+    import { apiKeyStore, imagesStore, type StoredImage } from "../lib/storage";
+    import { fetchImageBlob, generate360Image } from "../lib/replicate";
+    import { downloadBlob, suggestedFilename } from "../lib/download";
+
+    type ViewerCtor = typeof import("@photo-sphere-viewer/core").Viewer;
+    type GyroPlugin = import("@photo-sphere-viewer/gyroscope-plugin").GyroscopePlugin;
+
+    const $ = <T extends HTMLElement>(id: string): T => {
+      const el = document.getElementById(id);
+      if (!el) throw new Error(`Missing #${id}`);
+      return el as T;
+    };
+
+    const els = {
+      promptForm: $<HTMLFormElement>("prompt-form"),
+      promptInput: $<HTMLTextAreaElement>("prompt-input"),
+      generateBtn: $<HTMLButtonElement>("generate-btn"),
+      generateLabel: $<HTMLSpanElement>("generate-label"),
+      generateSpinner: $<HTMLSpanElement>("generate-spinner"),
+      viewerSection: $<HTMLElement>("viewer-section"),
+      viewer: $<HTMLDivElement>("viewer"),
+      viewerEmpty: $<HTMLDivElement>("viewer-empty"),
+      viewerMeta: $<HTMLDivElement>("viewer-meta"),
+      viewerPrompt: $<HTMLParagraphElement>("viewer-prompt"),
+      downloadBtn: $<HTMLButtonElement>("download-btn"),
+      gyroBanner: $<HTMLDivElement>("gyro-banner"),
+      gyroBtn: $<HTMLButtonElement>("gyro-btn"),
+      gallery: $<HTMLDivElement>("gallery"),
+      galleryEmpty: $<HTMLParagraphElement>("gallery-empty"),
+      clearGalleryBtn: $<HTMLButtonElement>("clear-gallery-btn"),
+      settingsBtn: $<HTMLButtonElement>("settings-btn"),
+      keyModal: $<HTMLDivElement>("key-modal"),
+      keyForm: $<HTMLFormElement>("key-form"),
+      keyInput: $<HTMLInputElement>("key-input"),
+      keyError: $<HTMLParagraphElement>("key-error"),
+      keySave: $<HTMLButtonElement>("key-save-btn"),
+      keyCancel: $<HTMLButtonElement>("key-cancel-btn"),
+      forgetKey: $<HTMLButtonElement>("forget-key-btn"),
+      toast: $<HTMLDivElement>("toast"),
+    };
+
+    let viewerInstance: InstanceType<ViewerCtor> | null = null;
+    let viewerObjectUrl: string | null = null;
+    let currentImage: StoredImage | null = null;
+    let toastTimer: number | null = null;
+    let viewerModule: typeof import("@photo-sphere-viewer/core") | null = null;
+    let gyroModule: typeof import("@photo-sphere-viewer/gyroscope-plugin") | null = null;
+
+    async function loadViewerModules(): Promise<void> {
+      if (viewerModule && gyroModule) return;
+      [viewerModule, gyroModule] = await Promise.all([
+        import("@photo-sphere-viewer/core"),
+        import("@photo-sphere-viewer/gyroscope-plugin"),
+      ]);
+    }
+
+    function showToast(message: string, kind: "info" | "error" = "info"): void {
+      els.toast.textContent = message;
+      els.toast.classList.remove("hidden");
+      els.toast.dataset.kind = kind;
+      if (kind === "error") {
+        els.toast.classList.add("border-[var(--color-danger)]/60");
+      } else {
+        els.toast.classList.remove("border-[var(--color-danger)]/60");
+      }
+      if (toastTimer) window.clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(() => els.toast.classList.add("hidden"), 4500);
+    }
+
+    function setBusy(busy: boolean): void {
+      els.generateBtn.disabled = busy;
+      els.promptInput.disabled = busy;
+      els.generateLabel.textContent = busy ? "Conjuring…" : "Generate ✨";
+      els.generateSpinner.classList.toggle("hidden", !busy);
+    }
+
+    function openModal(mode: "onboarding" | "settings"): void {
+      els.keyModal.classList.remove("hidden");
+      els.keyModal.classList.add("flex");
+      els.keyModal.setAttribute("aria-hidden", "false");
+      els.keyError.classList.add("hidden");
+      els.keyInput.value = "";
+      const isSettings = mode === "settings";
+      els.keyCancel.classList.toggle("hidden", !isSettings);
+      els.forgetKey.classList.toggle("hidden", !isSettings);
+      setTimeout(() => els.keyInput.focus(), 50);
+    }
+
+    function closeModal(): void {
+      els.keyModal.classList.add("hidden");
+      els.keyModal.classList.remove("flex");
+      els.keyModal.setAttribute("aria-hidden", "true");
+    }
+
+    async function ensureKey(): Promise<string | null> {
+      const key = await apiKeyStore.get();
+      if (!key) {
+        openModal("onboarding");
+        return null;
+      }
+      return key;
+    }
+
+    function isMobile(): boolean {
+      return window.matchMedia("(pointer: coarse)").matches;
+    }
+
+    async function showImage(image: StoredImage): Promise<void> {
+      currentImage = image;
+      await loadViewerModules();
+      const { Viewer } = viewerModule!;
+      const { GyroscopePlugin } = gyroModule!;
+
+      if (viewerObjectUrl) {
+        URL.revokeObjectURL(viewerObjectUrl);
+        viewerObjectUrl = null;
+      }
+      viewerObjectUrl = URL.createObjectURL(image.blob);
+
+      els.viewerEmpty.classList.add("hidden");
+      els.viewerMeta.classList.remove("hidden");
+      els.viewerPrompt.textContent = image.prompt;
+      if (isMobile()) {
+        els.gyroBanner.classList.remove("hidden");
+        els.gyroBanner.classList.add("flex");
+      }
+
+      if (viewerInstance) {
+        viewerInstance.destroy();
+        viewerInstance = null;
+      }
+
+      viewerInstance = new Viewer({
+        container: els.viewer,
+        panorama: viewerObjectUrl,
+        navbar: ["zoom", "move", "fullscreen"],
+        defaultPitch: 0,
+        defaultYaw: 0,
+        plugins: [[GyroscopePlugin, { touchmove: true }]],
+      });
+    }
+
+    function destroyViewer(): void {
+      if (viewerInstance) {
+        viewerInstance.destroy();
+        viewerInstance = null;
+      }
+      if (viewerObjectUrl) {
+        URL.revokeObjectURL(viewerObjectUrl);
+        viewerObjectUrl = null;
+      }
+      currentImage = null;
+      els.viewerEmpty.classList.remove("hidden");
+      els.viewerMeta.classList.add("hidden");
+      els.gyroBanner.classList.add("hidden");
+      els.gyroBanner.classList.remove("flex");
+    }
+
+    async function refreshGallery(): Promise<void> {
+      const items = await imagesStore.list();
+      els.gallery.innerHTML = "";
+      if (items.length === 0) {
+        els.galleryEmpty.classList.remove("hidden");
+        els.clearGalleryBtn.classList.add("hidden");
+        return;
+      }
+      els.galleryEmpty.classList.add("hidden");
+      els.clearGalleryBtn.classList.remove("hidden");
+
+      const fragment = document.createDocumentFragment();
+      for (const item of items) {
+        const card = document.createElement("article");
+        card.className =
+          "group relative overflow-hidden rounded-2xl border border-white/10 bg-black/40 transition hover:border-white/30";
+        const img = document.createElement("img");
+        const objectUrl = URL.createObjectURL(item.blob);
+        img.src = objectUrl;
+        img.alt = item.prompt;
+        img.loading = "lazy";
+        img.className = "aspect-[3/2] w-full object-cover";
+        img.addEventListener("load", () => URL.revokeObjectURL(objectUrl), { once: true });
+
+        const overlay = document.createElement("div");
+        overlay.className =
+          "pointer-events-none absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 via-black/0 to-transparent p-3 opacity-0 transition group-hover:opacity-100";
+        const caption = document.createElement("p");
+        caption.className = "line-clamp-2 text-xs text-white/90";
+        caption.textContent = item.prompt;
+        overlay.appendChild(caption);
+
+        const actions = document.createElement("div");
+        actions.className = "pointer-events-auto absolute right-2 top-2 flex gap-1.5";
+
+        const downloadBtn = document.createElement("button");
+        downloadBtn.type = "button";
+        downloadBtn.className =
+          "rounded-full bg-black/70 px-2 py-1 text-xs text-white backdrop-blur hover:bg-black";
+        downloadBtn.textContent = "⬇";
+        downloadBtn.title = "Download";
+        downloadBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          downloadBlob(item.blob, suggestedFilename(item.prompt));
+        });
+
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className =
+          "rounded-full bg-black/70 px-2 py-1 text-xs text-white backdrop-blur hover:bg-[var(--color-danger)]";
+        removeBtn.textContent = "✕";
+        removeBtn.title = "Remove";
+        removeBtn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          await imagesStore.remove(item.id);
+          if (currentImage?.id === item.id) destroyViewer();
+          await refreshGallery();
+        });
+
+        actions.appendChild(downloadBtn);
+        actions.appendChild(removeBtn);
+
+        card.appendChild(img);
+        card.appendChild(overlay);
+        card.appendChild(actions);
+        card.addEventListener("click", () => {
+          void showImage(item);
+          els.viewerSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+        fragment.appendChild(card);
+      }
+      els.gallery.appendChild(fragment);
+    }
+
+    async function handleGenerate(event: SubmitEvent): Promise<void> {
+      event.preventDefault();
+      const prompt = els.promptInput.value.trim();
+      if (!prompt) return;
+      const key = await ensureKey();
+      if (!key) return;
+
+      setBusy(true);
+      try {
+        const generated = await generate360Image({ apiKey: key, prompt });
+        const blob = await fetchImageBlob(generated.url);
+        const stored = await imagesStore.add({
+          prompt: generated.prompt,
+          finalPrompt: generated.finalPrompt,
+          blob,
+          contentType: blob.type || "image/webp",
+        });
+        await refreshGallery();
+        await showImage(stored);
+        els.promptInput.value = "";
+        showToast("World ready — drag to explore.");
+      } catch (error) {
+        const err = error as Error;
+        if (err.name === "InvalidApiKeyError") {
+          openModal("settings");
+          showToast(err.message, "error");
+        } else {
+          showToast(err.message ?? "Generation failed.", "error");
+        }
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function handleSaveKey(event: SubmitEvent): Promise<void> {
+      event.preventDefault();
+      const value = els.keyInput.value.trim();
+      if (!value) return;
+      els.keySave.disabled = true;
+      try {
+        await apiKeyStore.set(value);
+        els.keyError.classList.add("hidden");
+        closeModal();
+        showToast("Key saved locally.");
+      } catch (error) {
+        const err = error as Error;
+        els.keyError.textContent = err.message;
+        els.keyError.classList.remove("hidden");
+      } finally {
+        els.keySave.disabled = false;
+      }
+    }
+
+    async function enableGyroscope(): Promise<void> {
+      if (!viewerInstance || !gyroModule) return;
+      const plugin = viewerInstance.getPlugin(gyroModule.GyroscopePlugin) as GyroPlugin | null;
+      if (!plugin) {
+        showToast("Gyroscope plugin not available.", "error");
+        return;
+      }
+      try {
+        await plugin.start();
+        els.gyroBtn.textContent = "🎯 Gyroscope on";
+      } catch (error) {
+        const err = error as Error;
+        showToast(err.message ?? "Could not enable gyroscope.", "error");
+      }
+    }
+
+    els.promptForm.addEventListener("submit", handleGenerate);
+    els.keyForm.addEventListener("submit", handleSaveKey);
+    els.settingsBtn.addEventListener("click", () => openModal("settings"));
+    els.keyCancel.addEventListener("click", closeModal);
+    els.forgetKey.addEventListener("click", async () => {
+      await apiKeyStore.clear();
+      closeModal();
+      showToast("Key removed from this browser.");
+    });
+    els.downloadBtn.addEventListener("click", () => {
+      if (!currentImage) return;
+      downloadBlob(currentImage.blob, suggestedFilename(currentImage.prompt));
+    });
+    els.clearGalleryBtn.addEventListener("click", async () => {
+      const ok = window.confirm("Delete every image stored in this browser?");
+      if (!ok) return;
+      await imagesStore.clear();
+      destroyViewer();
+      await refreshGallery();
+    });
+    els.gyroBtn.addEventListener("click", () => void enableGyroscope());
+    els.keyModal.addEventListener("click", (e) => {
+      if (e.target === els.keyModal && !els.keyCancel.classList.contains("hidden")) {
+        closeModal();
+      }
+    });
+
+    void (async () => {
+      await refreshGallery();
+      const items = await imagesStore.list();
+      if (items.length > 0) {
+        await showImage(items[0]!);
+      }
+      const key = await apiKeyStore.get();
+      if (!key) openModal("onboarding");
+    })();
+  </script>
+</BaseLayout>
