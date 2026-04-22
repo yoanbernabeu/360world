@@ -20,3 +20,22 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "accelerometer=(self), gyroscope=(self), magnetometer=(self)"
+
+# Viewer 360° — /u/<user>/view/<slug> rewrites to the SPA template
+[[redirects]]
+  from = "/u/:user/view/:slug"
+  to = "/u/view/index.html"
+  status = 200
+
+# Public image — /u/<user>/<file>.webp proxies raw.githubusercontent.com
+[[redirects]]
+  from = "/u/:user/:file"
+  to = "https://raw.githubusercontent.com/:user/360world-data/main/images/:file"
+  status = 200
+  force = true
+
+# Gallery — /u/<user> rewrites to the SPA template
+[[redirects]]
+  from = "/u/:user"
+  to = "/u/index.html"
+  status = 200

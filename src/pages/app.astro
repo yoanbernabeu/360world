@@ -21,13 +21,24 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         </svg>
         <span class="font-display text-xl">360<span class="italic">World</span></span>
       </a>
-      <button
-        id="settings-btn"
-        type="button"
-        class="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-ink-faint)] underline decoration-[var(--color-rule)] underline-offset-[6px] transition hover:text-[var(--color-ink)] hover:decoration-[var(--color-ink)]"
-      >
-        Settings
-      </button>
+      <div class="flex items-center gap-5">
+        <a
+          id="my-gallery-link"
+          href="#"
+          target="_blank"
+          rel="noreferrer noopener"
+          class="hidden font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-ink-faint)] underline decoration-[var(--color-rule)] underline-offset-[6px] transition hover:text-[var(--color-flame)] hover:decoration-[var(--color-flame)]"
+        >
+          My gallery ↗
+        </a>
+        <button
+          id="settings-btn"
+          type="button"
+          class="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-ink-faint)] underline decoration-[var(--color-rule)] underline-offset-[6px] transition hover:text-[var(--color-ink)] hover:decoration-[var(--color-ink)]"
+        >
+          Settings
+        </button>
+      </div>
     </header>
 
     <!-- Prompt -->
@@ -176,6 +187,22 @@ import BaseLayout from "../layouts/BaseLayout.astro";
           >
             ↓ Download
           </button>
+          <button
+            id="publish-btn"
+            type="button"
+            class="pointer-events-auto hidden bg-white/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-white backdrop-blur transition hover:bg-[var(--color-flame)]"
+          >
+            ↑ Publish to GitHub
+          </button>
+          <a
+            id="published-link"
+            href="#"
+            target="_blank"
+            rel="noreferrer noopener"
+            class="pointer-events-auto hidden bg-[var(--color-flame)]/80 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-white backdrop-blur transition hover:bg-[var(--color-flame)]"
+          >
+            View shared link ↗
+          </a>
         </div>
       </div>
     </section>
@@ -229,9 +256,60 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         Stored in this browser only. Never logged on our side.
       </p>
 
+      <!-- Tabs -->
+      <div
+        id="settings-tabs"
+        role="tablist"
+        aria-label="Settings"
+        class="mt-6 flex gap-0 border-b border-[var(--color-rule)]"
+      >
+        <button
+          type="button"
+          role="tab"
+          data-settings-tab="openai"
+          aria-selected="true"
+          class="settings-tab -mb-px flex items-center gap-2 border-b-2 border-transparent px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-faint)] transition hover:text-[var(--color-ink)]"
+        >
+          <span>OpenAI</span>
+          <span
+            data-tab-check="openai"
+            class="hidden size-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white"
+            aria-label="Configured">✓</span
+          >
+        </button>
+        <button
+          type="button"
+          role="tab"
+          data-settings-tab="replicate"
+          aria-selected="false"
+          class="settings-tab -mb-px flex items-center gap-2 border-b-2 border-transparent px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-faint)] transition hover:text-[var(--color-ink)]"
+        >
+          <span>Replicate</span>
+          <span
+            data-tab-check="replicate"
+            class="hidden size-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white"
+            aria-label="Configured">✓</span
+          >
+        </button>
+        <button
+          type="button"
+          role="tab"
+          data-settings-tab="github"
+          aria-selected="false"
+          class="settings-tab -mb-px flex items-center gap-2 border-b-2 border-transparent px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-faint)] transition hover:text-[var(--color-ink)]"
+        >
+          <span>GitHub</span>
+          <span
+            data-tab-check="github"
+            class="hidden size-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-white"
+            aria-label="Configured">✓</span
+          >
+        </button>
+      </div>
+
       <!-- OpenAI section -->
       <section
-        data-provider-section="openai"
+        data-tab-panel="openai"
         class="mt-6 border-l-2 border-[var(--color-flame)] bg-[var(--color-flame)]/5 px-4 py-4"
       >
         <p class="kicker text-[var(--color-flame)]">OpenAI</p>
@@ -277,9 +355,98 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         </form>
       </section>
 
+      <!-- GitHub publish section -->
+      <section
+        data-tab-panel="github"
+        class="mt-4 border-l-2 border-[var(--color-rule)] bg-[var(--color-bg)]/60 px-4 py-4"
+      >
+        <p class="kicker">GitHub publish (optional)</p>
+        <p class="mt-1 text-[13px] leading-relaxed text-[var(--color-ink-soft)]">
+          Publish your worlds to a public GitHub repo so you can share them via
+          <code class="font-mono text-[12px]">360world.yoandev.co/u/&lt;you&gt;</code>. Create a
+          <strong>public</strong> repo named
+          <code class="font-mono text-[12px]">360world-data</code>, then generate a
+          <a
+            class="text-[var(--color-flame)] underline decoration-[var(--color-flame)]/40 underline-offset-[5px] hover:decoration-[var(--color-flame)]"
+            href="https://github.com/settings/personal-access-tokens/new"
+            target="_blank"
+            rel="noreferrer noopener">Fine-grained PAT</a
+          > scoped to that single repo with <span class="font-mono">Contents: Read &amp; write</span
+          >.
+        </p>
+        <div
+          id="github-profile-link-wrapper"
+          class="mt-3 hidden flex-col gap-2 border-l-2 border-emerald-500/70 bg-emerald-500/5 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div class="min-w-0 flex-1">
+            <p class="kicker text-emerald-400">Your public gallery</p>
+            <a
+              id="github-profile-link"
+              href="#"
+              target="_blank"
+              rel="noreferrer noopener"
+              class="block truncate font-mono text-[12px] text-[var(--color-ink)] underline decoration-[var(--color-rule)] underline-offset-[4px] hover:text-[var(--color-flame)] hover:decoration-[var(--color-flame)]"
+            >
+            </a>
+          </div>
+          <button
+            id="github-profile-copy"
+            type="button"
+            class="shrink-0 border border-[var(--color-rule)] bg-[var(--color-bg)] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] text-[var(--color-ink)] transition hover:border-[var(--color-flame)] hover:text-[var(--color-flame)]"
+          >
+            Copy link
+          </button>
+        </div>
+        <form id="github-form" class="mt-4 flex flex-col gap-3">
+          <label for="github-username-input" class="kicker">GitHub username</label>
+          <input
+            id="github-username-input"
+            type="text"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="octocat"
+            class="border border-[var(--color-rule)] bg-[var(--color-bg)] px-4 py-3 font-mono text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:border-[var(--color-flame)] focus:outline-none"
+          />
+          <label for="github-pat-input" class="kicker">Fine-grained PAT</label>
+          <input
+            id="github-pat-input"
+            type="password"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="github_pat_..."
+            class="border border-[var(--color-rule)] bg-[var(--color-bg)] px-4 py-3 font-mono text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:border-[var(--color-flame)] focus:outline-none"
+          />
+          <p
+            id="github-error"
+            class="hidden border-l-2 border-[var(--color-flame)] bg-[var(--color-flame)]/10 px-3 py-2 text-xs text-[var(--color-flame)]"
+          >
+          </p>
+          <p
+            id="github-success"
+            class="hidden border-l-2 border-emerald-500 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-400"
+          >
+          </p>
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <button
+              id="github-forget-btn"
+              type="button"
+              class="hidden font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-faint)] underline decoration-[var(--color-rule)] underline-offset-[5px] transition hover:text-[var(--color-flame)] hover:decoration-[var(--color-flame)]"
+            >
+              Disconnect GitHub
+            </button>
+            <button
+              type="submit"
+              class="bg-[var(--color-ink)] px-5 py-2 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-bg)] transition hover:bg-[var(--color-flame)] disabled:opacity-60"
+            >
+              Test &amp; save
+            </button>
+          </div>
+        </form>
+      </section>
+
       <!-- Replicate section -->
       <section
-        data-provider-section="replicate"
+        data-tab-panel="replicate"
         class="mt-4 border-l-2 border-[var(--color-rule)] bg-[var(--color-bg)]/60 px-4 py-4"
       >
         <p class="kicker">Replicate</p>
@@ -355,6 +522,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   <script>
     import {
       apiKeyStore,
+      githubConfigStore,
       imagesStore,
       openaiApiKeyStore,
       preferencesStore,
@@ -371,6 +539,14 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     } from "../lib/openai";
     import { downloadBlob, suggestedFilename } from "../lib/download";
     import { toEquirectangularBlob } from "../lib/equirect";
+    import { buildThumbnail } from "../lib/thumbnail";
+    import {
+      publishImage,
+      siteGalleryUrl,
+      siteViewerUrl,
+      unpublishImage,
+      validateConfig,
+    } from "../lib/github";
 
     type ViewerCtor = typeof import("@photo-sphere-viewer/core").Viewer;
     type GyroPlugin = import("@photo-sphere-viewer/gyroscope-plugin").GyroscopePlugin;
@@ -415,16 +591,93 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       replicateKeyInput: $<HTMLInputElement>("replicate-key-input"),
       replicateKeyError: $<HTMLParagraphElement>("replicate-key-error"),
       replicateForget: $<HTMLButtonElement>("replicate-forget-btn"),
+      githubForm: $<HTMLFormElement>("github-form"),
+      githubUsername: $<HTMLInputElement>("github-username-input"),
+      githubPat: $<HTMLInputElement>("github-pat-input"),
+      githubProfileLinkWrapper: $<HTMLDivElement>("github-profile-link-wrapper"),
+      githubProfileLink: $<HTMLAnchorElement>("github-profile-link"),
+      githubProfileCopy: $<HTMLButtonElement>("github-profile-copy"),
+      myGalleryLink: $<HTMLAnchorElement>("my-gallery-link"),
+      githubError: $<HTMLParagraphElement>("github-error"),
+      githubSuccess: $<HTMLParagraphElement>("github-success"),
+      githubForget: $<HTMLButtonElement>("github-forget-btn"),
+      publishBtn: $<HTMLButtonElement>("publish-btn"),
+      publishedLink: $<HTMLAnchorElement>("published-link"),
       keyCancel: $<HTMLButtonElement>("key-cancel-btn"),
       toast: $<HTMLDivElement>("toast"),
     };
 
-    const providerSectionEls = Array.from(
-      document.querySelectorAll<HTMLElement>("[data-provider-section]"),
+    type SettingsTab = "openai" | "replicate" | "github";
+    const settingsTabBtns = Array.from(
+      document.querySelectorAll<HTMLButtonElement>("[data-settings-tab]"),
     );
+    const settingsTabPanels = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-tab-panel]"),
+    );
+    const settingsTabChecks = new Map<SettingsTab, HTMLElement>();
+    for (const check of document.querySelectorAll<HTMLElement>("[data-tab-check]")) {
+      settingsTabChecks.set(check.dataset.tabCheck as SettingsTab, check);
+    }
+
     const providerTabs = Array.from(
       els.providerSwitch.querySelectorAll<HTMLButtonElement>(".provider-tab"),
     );
+
+    function selectSettingsTab(tab: SettingsTab): void {
+      for (const btn of settingsTabBtns) {
+        const isActive = btn.dataset.settingsTab === tab;
+        btn.setAttribute("aria-selected", isActive ? "true" : "false");
+        btn.style.color = isActive ? "var(--color-ink)" : "var(--color-ink-faint)";
+        btn.style.borderColor = isActive ? "var(--color-flame)" : "transparent";
+      }
+      for (const panel of settingsTabPanels) {
+        const isActive = panel.dataset.tabPanel === tab;
+        panel.classList.toggle("hidden", !isActive);
+      }
+    }
+
+    function updateSettingsTabChecks(state: {
+      openai: boolean;
+      replicate: boolean;
+      github: boolean;
+    }): void {
+      for (const [tab, check] of settingsTabChecks) {
+        const active = state[tab];
+        check.classList.toggle("hidden", !active);
+        check.classList.toggle("flex", active);
+      }
+    }
+
+    async function refreshSettingsTabChecks(): Promise<void> {
+      const [openaiKey, replicateKey, github] = await Promise.all([
+        openaiApiKeyStore.get(),
+        apiKeyStore.get(),
+        githubConfigStore.get(),
+      ]);
+      updateSettingsTabChecks({
+        openai: Boolean(openaiKey),
+        replicate: Boolean(replicateKey),
+        github: Boolean(github),
+      });
+    }
+
+    async function refreshGithubProfileUI(): Promise<void> {
+      const github = await githubConfigStore.get();
+      if (!github) {
+        els.myGalleryLink.classList.add("hidden");
+        els.githubProfileLinkWrapper.classList.add("hidden");
+        els.githubProfileLinkWrapper.classList.remove("flex");
+        return;
+      }
+      const relPath = siteGalleryUrl(github.username);
+      const absUrl = `${window.location.origin}${relPath}`;
+      els.myGalleryLink.href = relPath;
+      els.myGalleryLink.classList.remove("hidden");
+      els.githubProfileLink.href = relPath;
+      els.githubProfileLink.textContent = absUrl;
+      els.githubProfileLinkWrapper.classList.remove("hidden");
+      els.githubProfileLinkWrapper.classList.add("flex");
+    }
 
     let currentProvider: Provider = "openai";
 
@@ -468,25 +721,39 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       els.keyModal.setAttribute("aria-hidden", "false");
       els.openaiKeyError.classList.add("hidden");
       els.replicateKeyError.classList.add("hidden");
+      els.githubError.classList.add("hidden");
+      els.githubSuccess.classList.add("hidden");
       els.openaiKeyInput.value = "";
       els.replicateKeyInput.value = "";
+      els.githubPat.value = "";
 
-      const hasOpenaiKey = Boolean(await openaiApiKeyStore.get());
-      const hasReplicateKey = Boolean(await apiKeyStore.get());
+      const [hasOpenaiKey, hasReplicateKey, githubConfig] = await Promise.all([
+        openaiApiKeyStore.get(),
+        apiKeyStore.get(),
+        githubConfigStore.get(),
+      ]);
       els.openaiForget.classList.toggle("hidden", !hasOpenaiKey);
       els.replicateForget.classList.toggle("hidden", !hasReplicateKey);
+      els.githubForget.classList.toggle("hidden", !githubConfig);
+      if (githubConfig) {
+        els.githubUsername.value = githubConfig.username;
+      } else {
+        els.githubUsername.value = "";
+      }
 
       const isSettings = mode === "settings";
       els.keyCancel.classList.toggle("hidden", !isSettings);
 
-      // Both sections are always visible so the user can pick either provider
-      // on first connection (or manage both in settings).
-      for (const section of providerSectionEls) {
-        section.classList.remove("hidden");
-      }
+      updateSettingsTabChecks({
+        openai: Boolean(hasOpenaiKey),
+        replicate: Boolean(hasReplicateKey),
+        github: Boolean(githubConfig),
+      });
+      const initialTab: SettingsTab = mode === "onboarding" ? currentProvider : currentProvider;
+      selectSettingsTab(initialTab);
 
       els.keyModalTitle.innerHTML = isSettings
-        ? "API keys"
+        ? "Settings"
         : 'Connect a key to get <span class="italic">started</span>.';
 
       setTimeout(() => {
@@ -609,6 +876,8 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         defaultYaw: 0,
         plugins: [[GyroscopePlugin, { touchmove: true }]],
       });
+
+      await refreshPublishState();
     }
 
     function destroyViewer(): void {
@@ -627,7 +896,11 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     }
 
     async function refreshGallery(): Promise<void> {
-      const items = await imagesStore.list();
+      const [items, githubConfig] = await Promise.all([
+        imagesStore.list(),
+        githubConfigStore.get(),
+      ]);
+      const hasGithub = Boolean(githubConfig);
       els.gallery.innerHTML = "";
       if (items.length === 0) {
         els.galleryEmpty.classList.remove("hidden");
@@ -690,6 +963,29 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         });
 
         actions.appendChild(downloadBtn);
+        if (hasGithub) {
+          const publishBtn = document.createElement("button");
+          publishBtn.type = "button";
+          publishBtn.title = item.publishedSlug ? "Unpublish from GitHub" : "Publish to GitHub";
+          publishBtn.className = item.publishedSlug
+            ? "bg-emerald-500/90 px-2 py-1 font-mono text-[10px] text-white backdrop-blur transition hover:bg-[var(--color-flame-deep)]"
+            : "bg-[var(--color-bg)]/85 px-2 py-1 font-mono text-[10px] text-[var(--color-ink)] backdrop-blur transition hover:bg-[var(--color-flame)] hover:text-[var(--color-bg)]";
+          publishBtn.textContent = item.publishedSlug ? "✓" : "↑";
+          publishBtn.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            publishBtn.disabled = true;
+            publishBtn.textContent = "…";
+            try {
+              await togglePublishImage(item);
+            } catch (err) {
+              showToast((err as Error).message ?? "Publish failed.", "error");
+            } finally {
+              await refreshGallery();
+              if (currentImage?.id === item.id) await refreshPublishState();
+            }
+          });
+          actions.appendChild(publishBtn);
+        }
         actions.appendChild(removeBtn);
 
         card.appendChild(img);
@@ -786,6 +1082,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
           await switchProvider(provider);
         }
         await refreshProviderSwitchVisibility();
+        await refreshSettingsTabChecks();
         closeModal();
         showToast(
           provider === "openai" ? "OpenAI key saved locally." : "Replicate key saved locally.",
@@ -815,9 +1112,156 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       }
     }
 
+    async function handleSaveGithub(event: SubmitEvent): Promise<void> {
+      event.preventDefault();
+      const username = els.githubUsername.value.trim();
+      const pat = els.githubPat.value.trim();
+      const submit = (event.submitter as HTMLButtonElement | null) ?? null;
+      els.githubError.classList.add("hidden");
+      els.githubSuccess.classList.add("hidden");
+      if (!username || !pat) {
+        els.githubError.textContent = "Fill both fields.";
+        els.githubError.classList.remove("hidden");
+        return;
+      }
+      if (submit) {
+        submit.disabled = true;
+        submit.textContent = "Testing…";
+      }
+      try {
+        const result = await validateConfig({ username, pat });
+        if (!result.ok) {
+          els.githubError.textContent = result.reason;
+          els.githubError.classList.remove("hidden");
+          return;
+        }
+        await githubConfigStore.set({ username, pat });
+        els.githubPat.value = "";
+        els.githubForget.classList.remove("hidden");
+        els.githubSuccess.textContent = `Connected as @${result.login}.`;
+        els.githubSuccess.classList.remove("hidden");
+        await refreshPublishState();
+        await refreshGallery();
+        await refreshSettingsTabChecks();
+        await refreshGithubProfileUI();
+        showToast("GitHub publishing enabled.");
+      } finally {
+        if (submit) {
+          submit.disabled = false;
+          submit.textContent = "Test & save";
+        }
+      }
+    }
+
+    async function refreshPublishState(): Promise<void> {
+      const config = await githubConfigStore.get();
+      const hasConfig = Boolean(config);
+      if (!currentImage || !hasConfig) {
+        els.publishBtn.classList.add("hidden");
+        els.publishedLink.classList.add("hidden");
+        return;
+      }
+      if (currentImage.publishedSlug) {
+        els.publishBtn.classList.remove("hidden");
+        els.publishBtn.textContent = "✕ Unpublish";
+        els.publishedLink.href = siteViewerUrl(config!.username, currentImage.publishedSlug);
+        els.publishedLink.classList.remove("hidden");
+      } else {
+        els.publishBtn.classList.remove("hidden");
+        els.publishBtn.textContent = "↑ Publish to GitHub";
+        els.publishedLink.classList.add("hidden");
+      }
+    }
+
+    type PublishProgress = (label: string) => void;
+
+    async function togglePublishImage(
+      image: StoredImage,
+      onProgress?: PublishProgress,
+    ): Promise<void> {
+      const config = await githubConfigStore.get();
+      if (!config) {
+        await openModal("settings");
+        selectSettingsTab("github");
+        return;
+      }
+      if (image.publishedSlug) {
+        onProgress?.("Unpublishing…");
+        await unpublishImage(config, image.publishedSlug);
+        await imagesStore.setPublishedSlug(image.id, null);
+        image.publishedSlug = undefined;
+        showToast("Unpublished.");
+      } else {
+        onProgress?.("Preparing thumbnail…");
+        const equirect = await toEquirectangularBlob(image.blob, {
+          type: image.contentType,
+        });
+        const thumb = await buildThumbnail(equirect);
+        onProgress?.("Uploading to GitHub…");
+        const result = await publishImage(config, {
+          image: equirect,
+          thumbnail: thumb,
+          prompt: image.prompt,
+          finalPrompt: image.finalPrompt,
+          createdAt: image.createdAt,
+        });
+        await imagesStore.setPublishedSlug(image.id, result.slug);
+        image.publishedSlug = result.slug;
+        showToast(`Published — ${window.location.origin}${result.viewerUrl}`);
+      }
+    }
+
+    async function handlePublishCurrent(): Promise<void> {
+      if (!currentImage) return;
+      const image = currentImage;
+      els.publishBtn.disabled = true;
+      const original = els.publishBtn.textContent;
+      try {
+        await togglePublishImage(image, (label) => {
+          els.publishBtn.textContent = label;
+        });
+      } catch (err) {
+        const e = err as Error;
+        showToast(e.message ?? "Publish failed.", "error");
+        els.publishBtn.textContent = original ?? "↑ Publish to GitHub";
+      } finally {
+        els.publishBtn.disabled = false;
+        await refreshPublishState();
+        await refreshGallery();
+      }
+    }
+
     els.promptForm.addEventListener("submit", handleGenerate);
     els.openaiKeyForm.addEventListener("submit", (e) => handleSaveProviderKey("openai", e));
     els.replicateKeyForm.addEventListener("submit", (e) => handleSaveProviderKey("replicate", e));
+    for (const btn of settingsTabBtns) {
+      btn.addEventListener("click", () => {
+        const tab = btn.dataset.settingsTab as SettingsTab | undefined;
+        if (tab) selectSettingsTab(tab);
+      });
+    }
+    els.githubForm.addEventListener("submit", (e) => handleSaveGithub(e));
+    els.githubForget.addEventListener("click", async () => {
+      await githubConfigStore.clear();
+      els.githubForget.classList.add("hidden");
+      els.githubSuccess.classList.add("hidden");
+      await refreshPublishState();
+      await refreshGallery();
+      await refreshSettingsTabChecks();
+      await refreshGithubProfileUI();
+      showToast("GitHub config removed from this browser.");
+    });
+    els.githubProfileCopy.addEventListener("click", async () => {
+      const url = els.githubProfileLink.textContent?.trim();
+      if (!url) return;
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast("Link copied to clipboard.");
+      } catch {
+        showToast("Could not copy — select the link and copy manually.", "error");
+      }
+    });
+    els.publishBtn.addEventListener("click", () => void handlePublishCurrent());
     els.settingsBtn.addEventListener("click", () => {
       void openModal("settings");
     });
@@ -827,6 +1271,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       els.openaiForget.classList.add("hidden");
       await alignProviderWithAvailableKeys();
       await refreshProviderSwitchVisibility();
+      await refreshSettingsTabChecks();
       showToast("OpenAI key removed from this browser.");
     });
     els.replicateForget.addEventListener("click", async () => {
@@ -834,6 +1279,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       els.replicateForget.classList.add("hidden");
       await alignProviderWithAvailableKeys();
       await refreshProviderSwitchVisibility();
+      await refreshSettingsTabChecks();
       showToast("Replicate key removed from this browser.");
     });
     for (const tab of providerTabs) {
@@ -876,6 +1322,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       await refreshProviderSwitchVisibility();
 
       await refreshGallery();
+      await refreshGithubProfileUI();
       const items = await imagesStore.list();
       if (items.length > 0) {
         await showImage(items[0]!);

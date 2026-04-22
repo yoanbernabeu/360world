@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   apiKeyStore,
+  githubConfigStore,
   imagesStore,
   openaiApiKeyStore,
   preferencesStore,
@@ -13,6 +14,7 @@ async function reset(): Promise<void> {
   await apiKeyStore.clear();
   await openaiApiKeyStore.clear();
   await imagesStore.clear();
+  await githubConfigStore.clear();
   await preferencesStore.setProvider(DEFAULT_PROVIDER);
   await preferencesStore.setOpenAISize(DEFAULT_OPENAI_SIZE);
   await preferencesStore.setOpenAIQuality(DEFAULT_OPENAI_QUALITY);
@@ -162,5 +164,50 @@ describe("imagesStore", () => {
 
   it("returns null for an unknown id", async () => {
     await expect(imagesStore.get("missing")).resolves.toBeNull();
+  });
+
+  it("tracks a publishedSlug when set via setPublishedSlug", async () => {
+    const added = await imagesStore.add({
+      prompt: "p",
+      finalPrompt: "fp",
+      blob: new Blob(["x"]),
+      contentType: "image/webp",
+    });
+    await imagesStore.setPublishedSlug(added.id, "2026-01-01-p-abc");
+    const fetched = await imagesStore.get(added.id);
+    expect(fetched?.publishedSlug).toBe("2026-01-01-p-abc");
+
+    await imagesStore.setPublishedSlug(added.id, null);
+    const cleared = await imagesStore.get(added.id);
+    expect(cleared?.publishedSlug).toBeUndefined();
+  });
+
+  it("ignores setPublishedSlug on an unknown id", async () => {
+    await expect(imagesStore.setPublishedSlug("missing", "any")).resolves.toBeUndefined();
+  });
+});
+
+describe("githubConfigStore", () => {
+  it("returns null when nothing is configured", async () => {
+    await expect(githubConfigStore.get()).resolves.toBeNull();
+  });
+
+  it("stores, retrieves and clears a config", async () => {
+    await githubConfigStore.set({ username: "alice", pat: "tok" });
+    await expect(githubConfigStore.get()).resolves.toEqual({
+      username: "alice",
+      pat: "tok",
+    });
+    await githubConfigStore.clear();
+    await expect(githubConfigStore.get()).resolves.toBeNull();
+  });
+
+  it("trims whitespace and rejects empty fields", async () => {
+    await githubConfigStore.set({ username: "  alice  ", pat: "  tok  " });
+    await expect(githubConfigStore.get()).resolves.toEqual({
+      username: "alice",
+      pat: "tok",
+    });
+    await expect(githubConfigStore.set({ username: " ", pat: "tok" })).rejects.toThrow();
   });
 });

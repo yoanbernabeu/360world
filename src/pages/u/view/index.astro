@@ -1,0 +1,141 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="360World — shared view">
+  <div class="mx-auto flex min-h-svh max-w-[1400px] flex-col gap-6 px-5 py-6 sm:px-10 sm:py-8">
+    <header class="flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2.5">
+        <svg
+          class="size-6"
+          viewBox="0 0 64 64"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          aria-hidden="true"
+        >
+          <circle cx="32" cy="32" r="22"></circle>
+          <ellipse cx="32" cy="32" rx="22" ry="9"></ellipse>
+          <ellipse cx="32" cy="32" rx="9" ry="22"></ellipse>
+        </svg>
+        <span class="font-display text-xl">360<span class="italic">World</span></span>
+      </a>
+      <a
+        id="back-link"
+        href="/"
+        class="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-ink-faint)] underline decoration-[var(--color-rule)] underline-offset-[6px] transition hover:text-[var(--color-ink)] hover:decoration-[var(--color-ink)]"
+      >
+        ← Gallery
+      </a>
+    </header>
+
+    <section>
+      <p id="viewer-kicker" class="kicker">Shared world</p>
+      <h1
+        id="viewer-title"
+        class="mt-2 font-display text-3xl leading-tight tracking-tight sm:text-4xl"
+      >
+        <span class="italic">Loading</span>…
+      </h1>
+    </section>
+
+    <section
+      id="viewer-section"
+      class="relative aspect-[3/2] w-full overflow-hidden border border-[var(--color-rule)] bg-[var(--color-bg-deep)]"
+    >
+      <div id="viewer" class="absolute inset-0" style="touch-action: none;"></div>
+      <div
+        id="viewer-error"
+        class="absolute inset-0 hidden flex-col items-center justify-center gap-3 bg-[var(--color-bg-soft)]/60 p-8 text-center"
+      >
+        <p id="viewer-error-text" class="font-display text-xl text-[var(--color-ink)]"></p>
+      </div>
+    </section>
+
+    <section>
+      <a
+        id="create-link"
+        href="/app"
+        class="inline-flex items-center gap-2 bg-[var(--color-ink)] px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-bg)] transition hover:bg-[var(--color-flame)]"
+      >
+        Create your own 360° world →
+      </a>
+    </section>
+  </div>
+
+  <script>
+    import { fetchPublicManifest, rawImageUrl, siteGalleryUrl } from "../../../lib/github";
+
+    type ViewerCtor = typeof import("@photo-sphere-viewer/core").Viewer;
+
+    const $ = <T extends HTMLElement>(id: string): T => {
+      const el = document.getElementById(id);
+      if (!el) throw new Error(`Missing #${id}`);
+      return el as T;
+    };
+
+    const els = {
+      title: $<HTMLHeadingElement>("viewer-title"),
+      kicker: $<HTMLParagraphElement>("viewer-kicker"),
+      viewer: $<HTMLDivElement>("viewer"),
+      error: $<HTMLDivElement>("viewer-error"),
+      errorText: $<HTMLParagraphElement>("viewer-error-text"),
+      backLink: $<HTMLAnchorElement>("back-link"),
+    };
+
+    function parsePath(): { username: string; slug: string } | null {
+      const match = window.location.pathname.match(/^\/u\/([^/]+)\/view\/([^/]+)\/?$/);
+      if (!match) return null;
+      return {
+        username: decodeURIComponent(match[1]!),
+        slug: decodeURIComponent(match[2]!),
+      };
+    }
+
+    function showError(message: string): void {
+      els.title.innerHTML = '<span class="italic">Unavailable</span>.';
+      els.error.classList.remove("hidden");
+      els.error.classList.add("flex");
+      els.errorText.textContent = message;
+    }
+
+    async function mountViewer(url: string): Promise<void> {
+      const { Viewer } = (await import("@photo-sphere-viewer/core")) as { Viewer: ViewerCtor };
+      const { GyroscopePlugin } = await import("@photo-sphere-viewer/gyroscope-plugin");
+
+      new Viewer({
+        container: els.viewer,
+        panorama: url,
+        navbar: ["zoom", "move", "fullscreen"],
+        defaultPitch: 0,
+        defaultYaw: 0,
+        plugins: [[GyroscopePlugin, { touchmove: true }]],
+      });
+    }
+
+    void (async () => {
+      const parsed = parsePath();
+      if (!parsed) {
+        showError("Invalid viewer URL.");
+        return;
+      }
+      const { username, slug } = parsed;
+      els.backLink.href = siteGalleryUrl(username);
+      els.kicker.textContent = `@${username}`;
+
+      try {
+        const manifest = await fetchPublicManifest(username);
+        const entry = manifest.items.find((it) => it.slug === slug);
+        if (!entry) {
+          showError("This world is not in the manifest.");
+          return;
+        }
+        els.title.textContent = entry.prompt;
+        await mountViewer(rawImageUrl(username, slug));
+      } catch (err) {
+        const e = err as Error;
+        showError(e.message);
+      }
+    })();
+  </script>
+</BaseLayout>

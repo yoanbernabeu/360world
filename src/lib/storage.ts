@@ -4,16 +4,22 @@ import type { OpenAIImageQuality, OpenAIImageSize } from "./openai";
 const API_KEY_DB_NAME = "360world-key";
 const IMAGES_DB_NAME = "360world-images";
 const PREFS_DB_NAME = "360world-prefs";
+const GITHUB_DB_NAME = "360world-github";
 const STORE_NAME = "store";
 const REPLICATE_KEY_FIELD = "replicate";
 const OPENAI_KEY_FIELD = "openai";
 const PROVIDER_FIELD = "provider";
 const OPENAI_SIZE_FIELD = "openai-size";
 const OPENAI_QUALITY_FIELD = "openai-quality";
+const GITHUB_USERNAME_FIELD = "username";
+const GITHUB_PAT_FIELD = "pat";
+
+export const GITHUB_REPO = "360world-data";
 
 const apiKeyDb = createStore(API_KEY_DB_NAME, STORE_NAME);
 const imagesDb = createStore(IMAGES_DB_NAME, STORE_NAME);
 const prefsDb = createStore(PREFS_DB_NAME, STORE_NAME);
+const githubDb = createStore(GITHUB_DB_NAME, STORE_NAME);
 
 export type Provider = "openai" | "replicate";
 export const DEFAULT_PROVIDER: Provider = "openai";
@@ -27,6 +33,7 @@ export type StoredImage = {
   blob: Blob;
   contentType: string;
   createdAt: number;
+  publishedSlug?: string;
 };
 
 type StoredImageRecord = {
@@ -36,6 +43,7 @@ type StoredImageRecord = {
   bytes: ArrayBuffer;
   contentType: string;
   createdAt: number;
+  publishedSlug?: string;
 };
 
 function makeKeyStore(field: string): {
@@ -114,9 +122,20 @@ export const imagesStore = {
       bytes,
       contentType: image.contentType,
       createdAt: Date.now(),
+      publishedSlug: image.publishedSlug,
     };
     await set(record.id, record, imagesDb);
     return toStoredImage(record);
+  },
+
+  async setPublishedSlug(id: string, slug: string | null): Promise<void> {
+    const record = await get<StoredImageRecord>(id, imagesDb);
+    if (!record) return;
+    const next: StoredImageRecord = {
+      ...record,
+      publishedSlug: slug ?? undefined,
+    };
+    await set(id, next, imagesDb);
   },
 
   async remove(id: string): Promise<void> {
@@ -135,6 +154,37 @@ function toStoredImage(record: StoredImageRecord): StoredImage {
     finalPrompt: record.finalPrompt,
     contentType: record.contentType,
     createdAt: record.createdAt,
+    publishedSlug: record.publishedSlug,
     blob: new Blob([record.bytes], { type: record.contentType }),
   };
 }
+
+export type GithubConfig = {
+  username: string;
+  pat: string;
+};
+
+export const githubConfigStore = {
+  async get(): Promise<GithubConfig | null> {
+    const [username, pat] = await Promise.all([
+      get<string>(GITHUB_USERNAME_FIELD, githubDb),
+      get<string>(GITHUB_PAT_FIELD, githubDb),
+    ]);
+    if (!username || !pat) return null;
+    return { username, pat };
+  },
+
+  async set(config: GithubConfig): Promise<void> {
+    const username = config.username.trim();
+    const pat = config.pat.trim();
+    if (!username || !pat) {
+      throw new Error("GitHub config requires a username and PAT.");
+    }
+    await set(GITHUB_USERNAME_FIELD, username, githubDb);
+    await set(GITHUB_PAT_FIELD, pat, githubDb);
+  },
+
+  async clear(): Promise<void> {
+    await Promise.all([del(GITHUB_USERNAME_FIELD, githubDb), del(GITHUB_PAT_FIELD, githubDb)]);
+  },
+};
