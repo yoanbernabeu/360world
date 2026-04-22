@@ -45,14 +45,13 @@ beforeEach(() => {
         canvasHeight = v;
       },
     });
-    el.getContext = ((): unknown =>
-      ({
-        drawImage: (...args: unknown[]) => {
-          drawnArgs = args;
-        },
-        imageSmoothingEnabled: true,
-        imageSmoothingQuality: "high",
-      })) as unknown as HTMLCanvasElement["getContext"];
+    el.getContext = ((): unknown => ({
+      drawImage: (...args: unknown[]) => {
+        drawnArgs = args;
+      },
+      imageSmoothingEnabled: true,
+      imageSmoothingQuality: "high",
+    })) as unknown as HTMLCanvasElement["getContext"];
     el.toBlob = ((cb: (blob: Blob | null) => void, type: string) => {
       outputType = type;
       cb(new Blob([new Uint8Array([1, 2, 3])], { type }));

@@ -1,9 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { apiKeyStore, imagesStore } from "../src/lib/storage";
+import {
+  apiKeyStore,
+  imagesStore,
+  openaiApiKeyStore,
+  preferencesStore,
+  DEFAULT_PROVIDER,
+  DEFAULT_OPENAI_QUALITY,
+  DEFAULT_OPENAI_SIZE,
+} from "../src/lib/storage";
 
 async function reset(): Promise<void> {
   await apiKeyStore.clear();
+  await openaiApiKeyStore.clear();
   await imagesStore.clear();
+  await preferencesStore.setProvider(DEFAULT_PROVIDER);
+  await preferencesStore.setOpenAISize(DEFAULT_OPENAI_SIZE);
+  await preferencesStore.setOpenAIQuality(DEFAULT_OPENAI_QUALITY);
 }
 
 beforeEach(reset);
@@ -28,6 +40,42 @@ describe("apiKeyStore", () => {
 
   it("rejects empty values", async () => {
     await expect(apiKeyStore.set("    ")).rejects.toThrow();
+  });
+});
+
+describe("openaiApiKeyStore", () => {
+  it("is independent of the Replicate key", async () => {
+    await apiKeyStore.set("r8_replicate");
+    await openaiApiKeyStore.set("sk-openai");
+    await expect(apiKeyStore.get()).resolves.toBe("r8_replicate");
+    await expect(openaiApiKeyStore.get()).resolves.toBe("sk-openai");
+    await openaiApiKeyStore.clear();
+    await expect(openaiApiKeyStore.get()).resolves.toBeNull();
+    await expect(apiKeyStore.get()).resolves.toBe("r8_replicate");
+  });
+
+  it("rejects empty values", async () => {
+    await expect(openaiApiKeyStore.set("   ")).rejects.toThrow();
+  });
+});
+
+describe("preferencesStore", () => {
+  it("returns the default provider when unset", async () => {
+    await expect(preferencesStore.getProvider()).resolves.toBe(DEFAULT_PROVIDER);
+  });
+
+  it("persists and reads the provider", async () => {
+    await preferencesStore.setProvider("replicate");
+    await expect(preferencesStore.getProvider()).resolves.toBe("replicate");
+    await preferencesStore.setProvider("openai");
+    await expect(preferencesStore.getProvider()).resolves.toBe("openai");
+  });
+
+  it("persists and reads the OpenAI size and quality", async () => {
+    await preferencesStore.setOpenAISize("3840x2160");
+    await preferencesStore.setOpenAIQuality("medium");
+    await expect(preferencesStore.getOpenAISize()).resolves.toBe("3840x2160");
+    await expect(preferencesStore.getOpenAIQuality()).resolves.toBe("medium");
   });
 });
 

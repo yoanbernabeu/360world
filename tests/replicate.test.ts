@@ -21,16 +21,14 @@ const noSleep = (): Promise<void> => Promise.resolve();
 
 describe("generate360Image — start request", () => {
   it("posts the panorama-prefixed prompt and forwards the API key", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(
-        jsonResponse({
-          id: "pred_1",
-          status: "succeeded",
-          output: ["https://cdn.replicate/img.webp"],
-          error: null,
-        }),
-      );
+    const fetchMock = vi.fn().mockResolvedValueOnce(
+      jsonResponse({
+        id: "pred_1",
+        status: "succeeded",
+        output: ["https://cdn.replicate/img.webp"],
+        error: null,
+      }),
+    );
 
     const result = await generate360Image({
       apiKey: "r8_test_key",
@@ -179,16 +177,14 @@ describe("generate360Image — error handling", () => {
   });
 
   it("throws GenerationFailedError when prediction status is failed", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(
-        jsonResponse({
-          id: "pred_5",
-          status: "failed",
-          output: null,
-          error: "moderation blocked",
-        }),
-      );
+    const fetchMock = vi.fn().mockResolvedValueOnce(
+      jsonResponse({
+        id: "pred_5",
+        status: "failed",
+        output: null,
+        error: "moderation blocked",
+      }),
+    );
     await expect(
       generate360Image({ apiKey: "k", prompt: "x", fetchImpl: fetchMock, sleep: noSleep }),
     ).rejects.toMatchObject({

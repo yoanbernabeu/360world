@@ -32,6 +32,35 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
     <!-- Prompt -->
     <section>
+      <div id="provider-switch-wrapper" class="mb-3 hidden flex-wrap items-center gap-3">
+        <span class="kicker">Provider</span>
+        <div
+          id="provider-switch"
+          role="tablist"
+          aria-label="Image provider"
+          class="inline-flex border border-[var(--color-rule)]"
+        >
+          <button
+            type="button"
+            role="tab"
+            data-provider="openai"
+            aria-selected="true"
+            class="provider-tab px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] transition"
+          >
+            OpenAI
+          </button>
+          <button
+            type="button"
+            role="tab"
+            data-provider="replicate"
+            aria-selected="false"
+            class="provider-tab px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] transition"
+          >
+            Replicate
+          </button>
+        </div>
+      </div>
+
       <form id="prompt-form" class="flex flex-col gap-3 sm:flex-row sm:items-stretch">
         <label for="prompt-input" class="sr-only">Describe the world you want to step into</label>
         <textarea
@@ -55,6 +84,29 @@ import BaseLayout from "../layouts/BaseLayout.astro";
           ></span>
         </button>
       </form>
+
+      <div
+        id="openai-options"
+        class="mt-3 flex flex-wrap items-center gap-4 border-l-2 border-[var(--color-rule)] bg-[var(--color-bg-soft)]/40 px-4 py-2.5"
+      >
+        <div class="flex items-center gap-2">
+          <label for="openai-size" class="kicker">Size</label>
+          <select
+            id="openai-size"
+            class="border border-[var(--color-rule)] bg-[var(--color-bg)] px-2 py-1 font-mono text-[11px] uppercase tracking-[0.12em] text-[var(--color-ink)] focus:border-[var(--color-flame)] focus:outline-none"
+          >
+          </select>
+        </div>
+        <div class="flex items-center gap-2">
+          <label for="openai-quality" class="kicker">Quality</label>
+          <select
+            id="openai-quality"
+            class="border border-[var(--color-rule)] bg-[var(--color-bg)] px-2 py-1 font-mono text-[11px] uppercase tracking-[0.12em] text-[var(--color-ink)] focus:border-[var(--color-flame)] focus:outline-none"
+          >
+          </select>
+        </div>
+      </div>
+
       <p
         class="mt-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-faint)]"
       >
@@ -161,77 +213,133 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   <div
     id="key-modal"
     aria-hidden="true"
-    class="fixed inset-0 z-40 hidden items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+    class="fixed inset-0 z-40 hidden items-center justify-center overflow-y-auto bg-black/75 p-4 backdrop-blur-sm"
   >
     <div
-      class="w-full max-w-lg border border-[var(--color-rule)] bg-[var(--color-bg-soft)] p-7 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] sm:p-9"
+      class="my-8 w-full max-w-lg border border-[var(--color-rule)] bg-[var(--color-bg-soft)] p-7 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] sm:p-9"
     >
       <span class="kicker">Bring-your-own-key</span>
-      <h2 class="mt-3 font-display text-3xl leading-tight tracking-tight sm:text-4xl">
-        Connect your <span class="italic">Replicate</span> key.
+      <h2
+        id="key-modal-title"
+        class="mt-3 font-display text-3xl leading-tight tracking-tight sm:text-4xl"
+      >
+        Connect your <span class="italic">OpenAI</span> key.
       </h2>
       <p class="mt-3 text-sm leading-relaxed text-[var(--color-ink-soft)]">
-        Stored in this browser only. Never logged on our side. Create an account and grab a key at
-        <a
-          class="text-[var(--color-flame)] underline decoration-[var(--color-flame)]/40 underline-offset-[5px] hover:decoration-[var(--color-flame)]"
-          href="https://replicate.com/account/api-tokens"
-          target="_blank"
-          rel="noreferrer noopener">replicate.com/account/api-tokens</a
-        >.
+        Stored in this browser only. Never logged on our side.
       </p>
-      <div class="mt-5 border-l-2 border-[var(--color-flame)] bg-[var(--color-flame)]/5 px-4 py-3">
-        <p class="kicker text-[var(--color-flame)]">Why Replicate?</p>
-        <p class="mt-2 text-[13px] leading-relaxed text-[var(--color-ink-soft)]">
-          Replicate is a hub that hosts image models from many different providers. Plugging in one
-          Replicate key now means 360World can offer you a choice of models later — without ever
-          asking you to juggle multiple accounts.
+
+      <!-- OpenAI section -->
+      <section
+        data-provider-section="openai"
+        class="mt-6 border-l-2 border-[var(--color-flame)] bg-[var(--color-flame)]/5 px-4 py-4"
+      >
+        <p class="kicker text-[var(--color-flame)]">OpenAI</p>
+        <p class="mt-1 text-[13px] leading-relaxed text-[var(--color-ink-soft)]">
+          Direct API call to <code class="font-mono text-[12px]">api.openai.com</code>. Get a key at
+          <a
+            class="text-[var(--color-flame)] underline decoration-[var(--color-flame)]/40 underline-offset-[5px] hover:decoration-[var(--color-flame)]"
+            href="https://platform.openai.com/api-keys"
+            target="_blank"
+            rel="noreferrer noopener">platform.openai.com/api-keys</a
+          >.
         </p>
-      </div>
-      <form id="key-form" class="mt-6 flex flex-col gap-3">
-        <label for="key-input" class="kicker">API token</label>
-        <input
-          id="key-input"
-          type="password"
-          autocomplete="off"
-          spellcheck="false"
-          required
-          placeholder="r8_..."
-          class="border border-[var(--color-rule)] bg-[var(--color-bg)] px-4 py-3 font-mono text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:border-[var(--color-flame)] focus:outline-none"
-        />
-        <p
-          id="key-error"
-          class="hidden border-l-2 border-[var(--color-flame)] bg-[var(--color-flame)]/10 px-3 py-2 text-xs text-[var(--color-flame)]"
-        >
-        </p>
-        <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-ink-faint)]">
-          ⚠ Stored locally — don't use this app on a shared device.
-        </p>
-        <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
-          <button
-            id="forget-key-btn"
-            type="button"
-            class="hidden font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-faint)] underline decoration-[var(--color-rule)] underline-offset-[5px] transition hover:text-[var(--color-flame)] hover:decoration-[var(--color-flame)]"
+        <form id="openai-key-form" class="mt-4 flex flex-col gap-3">
+          <label for="openai-key-input" class="kicker">API key</label>
+          <input
+            id="openai-key-input"
+            type="password"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="sk-..."
+            class="border border-[var(--color-rule)] bg-[var(--color-bg)] px-4 py-3 font-mono text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:border-[var(--color-flame)] focus:outline-none"
+          />
+          <p
+            id="openai-key-error"
+            class="hidden border-l-2 border-[var(--color-flame)] bg-[var(--color-flame)]/10 px-3 py-2 text-xs text-[var(--color-flame)]"
           >
-            Forget my key
-          </button>
-          <div class="flex gap-2">
+          </p>
+          <div class="flex flex-wrap items-center justify-between gap-2">
             <button
-              id="key-cancel-btn"
+              id="openai-forget-btn"
               type="button"
-              class="hidden border border-[var(--color-rule)] bg-transparent px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-ink)] transition hover:border-[var(--color-ink)]"
+              class="hidden font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-faint)] underline decoration-[var(--color-rule)] underline-offset-[5px] transition hover:text-[var(--color-flame)] hover:decoration-[var(--color-flame)]"
             >
-              Cancel
+              Forget key
             </button>
             <button
               type="submit"
-              id="key-save-btn"
-              class="bg-[var(--color-ink)] px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-bg)] transition hover:bg-[var(--color-flame)] disabled:opacity-60"
+              class="bg-[var(--color-ink)] px-5 py-2 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-bg)] transition hover:bg-[var(--color-flame)] disabled:opacity-60"
             >
-              Save & continue
+              Save OpenAI key
             </button>
           </div>
-        </div>
-      </form>
+        </form>
+      </section>
+
+      <!-- Replicate section -->
+      <section
+        data-provider-section="replicate"
+        class="mt-4 border-l-2 border-[var(--color-rule)] bg-[var(--color-bg)]/60 px-4 py-4"
+      >
+        <p class="kicker">Replicate</p>
+        <p class="mt-1 text-[13px] leading-relaxed text-[var(--color-ink-soft)]">
+          Routed through a CORS proxy (Netlify function). Get a key at
+          <a
+            class="text-[var(--color-flame)] underline decoration-[var(--color-flame)]/40 underline-offset-[5px] hover:decoration-[var(--color-flame)]"
+            href="https://replicate.com/account/api-tokens"
+            target="_blank"
+            rel="noreferrer noopener">replicate.com/account/api-tokens</a
+          >.
+        </p>
+        <form id="replicate-key-form" class="mt-4 flex flex-col gap-3">
+          <label for="replicate-key-input" class="kicker">API token</label>
+          <input
+            id="replicate-key-input"
+            type="password"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="r8_..."
+            class="border border-[var(--color-rule)] bg-[var(--color-bg)] px-4 py-3 font-mono text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:border-[var(--color-flame)] focus:outline-none"
+          />
+          <p
+            id="replicate-key-error"
+            class="hidden border-l-2 border-[var(--color-flame)] bg-[var(--color-flame)]/10 px-3 py-2 text-xs text-[var(--color-flame)]"
+          >
+          </p>
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <button
+              id="replicate-forget-btn"
+              type="button"
+              class="hidden font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-faint)] underline decoration-[var(--color-rule)] underline-offset-[5px] transition hover:text-[var(--color-flame)] hover:decoration-[var(--color-flame)]"
+            >
+              Forget key
+            </button>
+            <button
+              type="submit"
+              class="bg-[var(--color-ink)] px-5 py-2 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-bg)] transition hover:bg-[var(--color-flame)] disabled:opacity-60"
+            >
+              Save Replicate key
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <p
+        class="mt-5 font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-ink-faint)]"
+      >
+        ⚠ Stored locally — don't use this app on a shared device.
+      </p>
+
+      <div class="mt-5 flex justify-end">
+        <button
+          id="key-cancel-btn"
+          type="button"
+          class="hidden border border-[var(--color-rule)] bg-transparent px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-ink)] transition hover:border-[var(--color-ink)]"
+        >
+          Close
+        </button>
+      </div>
     </div>
   </div>
 
@@ -245,8 +353,22 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   </div>
 
   <script>
-    import { apiKeyStore, imagesStore, type StoredImage } from "../lib/storage";
-    import { fetchImageBlob, generate360Image } from "../lib/replicate";
+    import {
+      apiKeyStore,
+      imagesStore,
+      openaiApiKeyStore,
+      preferencesStore,
+      type Provider,
+      type StoredImage,
+    } from "../lib/storage";
+    import { fetchImageBlob, generate360Image as generateReplicateImage } from "../lib/replicate";
+    import {
+      OPENAI_QUALITY_OPTIONS,
+      OPENAI_SIZE_OPTIONS,
+      generate360Image as generateOpenAIImage,
+      type OpenAIImageQuality,
+      type OpenAIImageSize,
+    } from "../lib/openai";
     import { downloadBlob, suggestedFilename } from "../lib/download";
     import { toEquirectangularBlob } from "../lib/equirect";
 
@@ -265,6 +387,11 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       generateBtn: $<HTMLButtonElement>("generate-btn"),
       generateLabel: $<HTMLSpanElement>("generate-label"),
       generateSpinner: $<HTMLSpanElement>("generate-spinner"),
+      providerSwitch: $<HTMLDivElement>("provider-switch"),
+      providerSwitchWrapper: $<HTMLDivElement>("provider-switch-wrapper"),
+      openaiOptions: $<HTMLDivElement>("openai-options"),
+      openaiSize: $<HTMLSelectElement>("openai-size"),
+      openaiQuality: $<HTMLSelectElement>("openai-quality"),
       viewerSection: $<HTMLElement>("viewer-section"),
       viewer: $<HTMLDivElement>("viewer"),
       viewerEmpty: $<HTMLDivElement>("viewer-empty"),
@@ -279,14 +406,27 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       clearGalleryBtn: $<HTMLButtonElement>("clear-gallery-btn"),
       settingsBtn: $<HTMLButtonElement>("settings-btn"),
       keyModal: $<HTMLDivElement>("key-modal"),
-      keyForm: $<HTMLFormElement>("key-form"),
-      keyInput: $<HTMLInputElement>("key-input"),
-      keyError: $<HTMLParagraphElement>("key-error"),
-      keySave: $<HTMLButtonElement>("key-save-btn"),
+      keyModalTitle: $<HTMLHeadingElement>("key-modal-title"),
+      openaiKeyForm: $<HTMLFormElement>("openai-key-form"),
+      openaiKeyInput: $<HTMLInputElement>("openai-key-input"),
+      openaiKeyError: $<HTMLParagraphElement>("openai-key-error"),
+      openaiForget: $<HTMLButtonElement>("openai-forget-btn"),
+      replicateKeyForm: $<HTMLFormElement>("replicate-key-form"),
+      replicateKeyInput: $<HTMLInputElement>("replicate-key-input"),
+      replicateKeyError: $<HTMLParagraphElement>("replicate-key-error"),
+      replicateForget: $<HTMLButtonElement>("replicate-forget-btn"),
       keyCancel: $<HTMLButtonElement>("key-cancel-btn"),
-      forgetKey: $<HTMLButtonElement>("forget-key-btn"),
       toast: $<HTMLDivElement>("toast"),
     };
+
+    const providerSectionEls = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-provider-section]"),
+    );
+    const providerTabs = Array.from(
+      els.providerSwitch.querySelectorAll<HTMLButtonElement>(".provider-tab"),
+    );
+
+    let currentProvider: Provider = "openai";
 
     let viewerInstance: InstanceType<ViewerCtor> | null = null;
     let viewerObjectUrl: string | null = null;
@@ -306,9 +446,11 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     function showToast(message: string, kind: "info" | "error" = "info"): void {
       els.toast.textContent = message;
       els.toast.classList.remove("hidden");
-      els.toast.style.background = kind === "error" ? "var(--color-flame-deep)" : "var(--color-ink)";
+      els.toast.style.background =
+        kind === "error" ? "var(--color-flame-deep)" : "var(--color-ink)";
       els.toast.style.color = kind === "error" ? "var(--color-ink)" : "var(--color-bg)";
-      els.toast.style.borderColor = kind === "error" ? "var(--color-flame-deep)" : "var(--color-ink)";
+      els.toast.style.borderColor =
+        kind === "error" ? "var(--color-flame-deep)" : "var(--color-ink)";
       if (toastTimer) window.clearTimeout(toastTimer);
       toastTimer = window.setTimeout(() => els.toast.classList.add("hidden"), 4500);
     }
@@ -320,16 +462,37 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       els.generateSpinner.classList.toggle("hidden", !busy);
     }
 
-    function openModal(mode: "onboarding" | "settings"): void {
+    async function openModal(mode: "onboarding" | "settings"): Promise<void> {
       els.keyModal.classList.remove("hidden");
       els.keyModal.classList.add("flex");
       els.keyModal.setAttribute("aria-hidden", "false");
-      els.keyError.classList.add("hidden");
-      els.keyInput.value = "";
+      els.openaiKeyError.classList.add("hidden");
+      els.replicateKeyError.classList.add("hidden");
+      els.openaiKeyInput.value = "";
+      els.replicateKeyInput.value = "";
+
+      const hasOpenaiKey = Boolean(await openaiApiKeyStore.get());
+      const hasReplicateKey = Boolean(await apiKeyStore.get());
+      els.openaiForget.classList.toggle("hidden", !hasOpenaiKey);
+      els.replicateForget.classList.toggle("hidden", !hasReplicateKey);
+
       const isSettings = mode === "settings";
       els.keyCancel.classList.toggle("hidden", !isSettings);
-      els.forgetKey.classList.toggle("hidden", !isSettings);
-      setTimeout(() => els.keyInput.focus(), 50);
+
+      // Both sections are always visible so the user can pick either provider
+      // on first connection (or manage both in settings).
+      for (const section of providerSectionEls) {
+        section.classList.remove("hidden");
+      }
+
+      els.keyModalTitle.innerHTML = isSettings
+        ? "API keys"
+        : 'Connect a key to get <span class="italic">started</span>.';
+
+      setTimeout(() => {
+        const target = currentProvider === "openai" ? els.openaiKeyInput : els.replicateKeyInput;
+        target.focus();
+      }, 50);
     }
 
     function closeModal(): void {
@@ -338,13 +501,73 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       els.keyModal.setAttribute("aria-hidden", "true");
     }
 
+    async function getActiveKey(): Promise<string | null> {
+      return currentProvider === "openai" ? openaiApiKeyStore.get() : apiKeyStore.get();
+    }
+
     async function ensureKey(): Promise<string | null> {
-      const key = await apiKeyStore.get();
+      const key = await getActiveKey();
       if (!key) {
-        openModal("onboarding");
+        await openModal("onboarding");
         return null;
       }
       return key;
+    }
+
+    function populateOpenAIOptions(): void {
+      for (const opt of OPENAI_SIZE_OPTIONS) {
+        const el = document.createElement("option");
+        el.value = opt.value;
+        el.textContent = opt.label;
+        els.openaiSize.appendChild(el);
+      }
+      for (const opt of OPENAI_QUALITY_OPTIONS) {
+        const el = document.createElement("option");
+        el.value = opt.value;
+        el.textContent = opt.label;
+        els.openaiQuality.appendChild(el);
+      }
+    }
+
+    function applyProviderUI(): void {
+      for (const tab of providerTabs) {
+        const isActive = tab.dataset.provider === currentProvider;
+        tab.setAttribute("aria-selected", isActive ? "true" : "false");
+        tab.style.background = isActive ? "var(--color-ink)" : "transparent";
+        tab.style.color = isActive ? "var(--color-bg)" : "var(--color-ink)";
+      }
+      els.openaiOptions.classList.toggle("hidden", currentProvider !== "openai");
+    }
+
+    async function refreshProviderSwitchVisibility(): Promise<void> {
+      const [openaiKey, replicateKey] = await Promise.all([
+        openaiApiKeyStore.get(),
+        apiKeyStore.get(),
+      ]);
+      const bothPresent = Boolean(openaiKey) && Boolean(replicateKey);
+      els.providerSwitchWrapper.classList.toggle("hidden", !bothPresent);
+      els.providerSwitchWrapper.classList.toggle("flex", bothPresent);
+    }
+
+    async function switchProvider(next: Provider): Promise<void> {
+      if (next === currentProvider) return;
+      currentProvider = next;
+      await preferencesStore.setProvider(next);
+      applyProviderUI();
+    }
+
+    async function alignProviderWithAvailableKeys(): Promise<void> {
+      const [openaiKey, replicateKey] = await Promise.all([
+        openaiApiKeyStore.get(),
+        apiKeyStore.get(),
+      ]);
+      // If only one provider has a key, force-activate it regardless of the
+      // stored preference — otherwise "Generate" would hit a missing key.
+      if (openaiKey && !replicateKey && currentProvider !== "openai") {
+        await switchProvider("openai");
+      } else if (replicateKey && !openaiKey && currentProvider !== "replicate") {
+        await switchProvider("replicate");
+      }
     }
 
     function isMobile(): boolean {
@@ -435,8 +658,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         overlay.className =
           "pointer-events-none absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/85 via-black/0 to-transparent p-3 opacity-0 transition group-hover:opacity-100";
         const caption = document.createElement("p");
-        caption.className =
-          "line-clamp-2 font-display text-[13px] italic text-white sm:text-sm";
+        caption.className = "line-clamp-2 font-display text-[13px] italic text-white sm:text-sm";
         caption.textContent = item.prompt;
         overlay.appendChild(caption);
 
@@ -491,56 +713,89 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
       setBusy(true, "Starting…");
       try {
-        const generated = await generate360Image({
-          apiKey: key,
-          prompt,
-          onProgress: (e) => {
-            const seconds = Math.round(e.elapsedMs / 1000);
-            const verb = e.status === "starting" ? "Warming up" : "Painting";
-            setBusy(true, `${verb} · ${seconds}s`);
-          },
-        });
-        setBusy(true, "Downloading…");
-        const blob = await fetchImageBlob(generated.url);
-        const stored = await imagesStore.add({
-          prompt: generated.prompt,
-          finalPrompt: generated.finalPrompt,
-          blob,
-          contentType: blob.type || "image/webp",
-        });
+        let stored: StoredImage;
+        if (currentProvider === "openai") {
+          const size = els.openaiSize.value as OpenAIImageSize;
+          const quality = els.openaiQuality.value as OpenAIImageQuality;
+          setBusy(true, "Painting…");
+          const generated = await generateOpenAIImage({
+            apiKey: key,
+            prompt,
+            size,
+            quality,
+          });
+          stored = await imagesStore.add({
+            prompt: generated.prompt,
+            finalPrompt: generated.finalPrompt,
+            blob: generated.blob,
+            contentType: generated.blob.type || "image/png",
+          });
+        } else {
+          const generated = await generateReplicateImage({
+            apiKey: key,
+            prompt,
+            onProgress: (e) => {
+              const seconds = Math.round(e.elapsedMs / 1000);
+              const verb = e.status === "starting" ? "Warming up" : "Painting";
+              setBusy(true, `${verb} · ${seconds}s`);
+            },
+          });
+          setBusy(true, "Downloading…");
+          const blob = await fetchImageBlob(generated.url);
+          stored = await imagesStore.add({
+            prompt: generated.prompt,
+            finalPrompt: generated.finalPrompt,
+            blob,
+            contentType: blob.type || "image/webp",
+          });
+        }
+
         await refreshGallery();
         await showImage(stored);
         els.promptInput.value = "";
         showToast("World ready — drag to explore.");
       } catch (error) {
         const err = error as Error;
-        if (err.name === "InvalidApiKeyError") {
-          openModal("settings");
-          showToast(err.message, "error");
-        } else {
-          showToast(err.message ?? "Generation failed.", "error");
+        if (err.name === "InvalidApiKeyError" || err.name === "InvalidOpenAIKeyError") {
+          await openModal("settings");
         }
+        showToast(err.message ?? "Generation failed.", "error");
       } finally {
         setBusy(false);
       }
     }
 
-    async function handleSaveKey(event: SubmitEvent): Promise<void> {
+    async function handleSaveProviderKey(provider: Provider, event: SubmitEvent): Promise<void> {
       event.preventDefault();
-      const value = els.keyInput.value.trim();
+      const input = provider === "openai" ? els.openaiKeyInput : els.replicateKeyInput;
+      const errorEl = provider === "openai" ? els.openaiKeyError : els.replicateKeyError;
+      const forgetBtn = provider === "openai" ? els.openaiForget : els.replicateForget;
+      const store = provider === "openai" ? openaiApiKeyStore : apiKeyStore;
+      const submit = (event.submitter as HTMLButtonElement | null) ?? null;
+      const value = input.value.trim();
       if (!value) return;
-      els.keySave.disabled = true;
+      if (submit) submit.disabled = true;
       try {
-        await apiKeyStore.set(value);
-        els.keyError.classList.add("hidden");
+        await store.set(value);
+        errorEl.classList.add("hidden");
+        forgetBtn.classList.remove("hidden");
+        input.value = "";
+        // If the user saved a key for a provider other than the active one,
+        // auto-switch — that's almost certainly what they meant.
+        if (provider !== currentProvider) {
+          await switchProvider(provider);
+        }
+        await refreshProviderSwitchVisibility();
         closeModal();
-        showToast("Key saved locally.");
+        showToast(
+          provider === "openai" ? "OpenAI key saved locally." : "Replicate key saved locally.",
+        );
       } catch (error) {
         const err = error as Error;
-        els.keyError.textContent = err.message;
-        els.keyError.classList.remove("hidden");
+        errorEl.textContent = err.message;
+        errorEl.classList.remove("hidden");
       } finally {
-        els.keySave.disabled = false;
+        if (submit) submit.disabled = false;
       }
     }
 
@@ -561,13 +816,37 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     }
 
     els.promptForm.addEventListener("submit", handleGenerate);
-    els.keyForm.addEventListener("submit", handleSaveKey);
-    els.settingsBtn.addEventListener("click", () => openModal("settings"));
+    els.openaiKeyForm.addEventListener("submit", (e) => handleSaveProviderKey("openai", e));
+    els.replicateKeyForm.addEventListener("submit", (e) => handleSaveProviderKey("replicate", e));
+    els.settingsBtn.addEventListener("click", () => {
+      void openModal("settings");
+    });
     els.keyCancel.addEventListener("click", closeModal);
-    els.forgetKey.addEventListener("click", async () => {
+    els.openaiForget.addEventListener("click", async () => {
+      await openaiApiKeyStore.clear();
+      els.openaiForget.classList.add("hidden");
+      await alignProviderWithAvailableKeys();
+      await refreshProviderSwitchVisibility();
+      showToast("OpenAI key removed from this browser.");
+    });
+    els.replicateForget.addEventListener("click", async () => {
       await apiKeyStore.clear();
-      closeModal();
-      showToast("Key removed from this browser.");
+      els.replicateForget.classList.add("hidden");
+      await alignProviderWithAvailableKeys();
+      await refreshProviderSwitchVisibility();
+      showToast("Replicate key removed from this browser.");
+    });
+    for (const tab of providerTabs) {
+      tab.addEventListener("click", () => {
+        const next = tab.dataset.provider as Provider | undefined;
+        if (next) void switchProvider(next);
+      });
+    }
+    els.openaiSize.addEventListener("change", () => {
+      void preferencesStore.setOpenAISize(els.openaiSize.value as OpenAIImageSize);
+    });
+    els.openaiQuality.addEventListener("change", () => {
+      void preferencesStore.setOpenAIQuality(els.openaiQuality.value as OpenAIImageQuality);
     });
     els.downloadBtn.addEventListener("click", () => {
       if (!currentImage) return;
@@ -588,13 +867,21 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     });
 
     void (async () => {
+      populateOpenAIOptions();
+      currentProvider = await preferencesStore.getProvider();
+      els.openaiSize.value = await preferencesStore.getOpenAISize();
+      els.openaiQuality.value = await preferencesStore.getOpenAIQuality();
+      await alignProviderWithAvailableKeys();
+      applyProviderUI();
+      await refreshProviderSwitchVisibility();
+
       await refreshGallery();
       const items = await imagesStore.list();
       if (items.length > 0) {
         await showImage(items[0]!);
       }
-      const key = await apiKeyStore.get();
-      if (!key) openModal("onboarding");
+      const key = await getActiveKey();
+      if (!key) void openModal("onboarding");
     })();
   </script>
 </BaseLayout>
