@@ -3,30 +3,35 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout title="360World — generator">
-  <div class="mx-auto flex min-h-svh max-w-6xl flex-col gap-6 px-4 py-6 sm:px-6 sm:py-8">
+  <div class="mx-auto flex min-h-svh max-w-[1200px] flex-col gap-8 px-5 py-6 sm:px-10 sm:py-8">
     <!-- Top bar -->
-    <header class="flex items-center justify-between gap-4">
-      <a href="/" class="flex items-center gap-2 text-base font-semibold tracking-tight">
-        <span
-          class="inline-block size-6 rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[#3a1fb0] shadow-[0_0_25px_rgba(124,92,255,0.55)]"
-        ></span>
-        360World
-      </a>
-      <div class="flex items-center gap-2">
-        <button
-          id="settings-btn"
-          type="button"
-          class="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/80 backdrop-blur transition hover:bg-white/10"
+    <header class="flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2.5">
+        <svg
+          class="size-6"
+          viewBox="0 0 64 64"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          aria-hidden="true"
         >
-          Settings
-        </button>
-      </div>
+          <circle cx="32" cy="32" r="22"></circle>
+          <ellipse cx="32" cy="32" rx="22" ry="9"></ellipse>
+          <ellipse cx="32" cy="32" rx="9" ry="22"></ellipse>
+        </svg>
+        <span class="font-display text-xl">360<span class="italic">World</span></span>
+      </a>
+      <button
+        id="settings-btn"
+        type="button"
+        class="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-ink-faint)] underline decoration-[var(--color-rule)] underline-offset-[6px] transition hover:text-[var(--color-ink)] hover:decoration-[var(--color-ink)]"
+      >
+        Settings
+      </button>
     </header>
 
     <!-- Prompt -->
-    <section
-      class="rounded-3xl border border-white/10 bg-[var(--color-bg-soft)]/80 p-4 backdrop-blur sm:p-6"
-    >
+    <section>
       <form id="prompt-form" class="flex flex-col gap-3 sm:flex-row sm:items-stretch">
         <label for="prompt-input" class="sr-only">Describe the world you want to step into</label>
         <textarea
@@ -36,71 +41,88 @@ import BaseLayout from "../layouts/BaseLayout.astro";
           required
           maxlength="900"
           placeholder="An abandoned space station orbiting a ringed planet, soft sunrise light…"
-          class="flex-1 resize-none rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-base text-white placeholder:text-white/30 focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30"
+          class="flex-1 resize-none border border-[var(--color-rule)] bg-[var(--color-bg-soft)] px-4 py-3.5 font-display text-lg leading-snug text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:border-[var(--color-flame)] focus:outline-none focus:ring-0 sm:text-xl"
         ></textarea>
         <button
           id="generate-btn"
           type="submit"
-          class="group relative inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-[var(--color-accent)] px-5 py-3 text-base font-medium text-white shadow-lg shadow-[var(--color-accent)]/30 transition hover:bg-[var(--color-accent-strong)] disabled:cursor-not-allowed disabled:opacity-60"
+          class="group relative inline-flex shrink-0 items-center justify-center gap-3 bg-[var(--color-ink)] px-7 py-4 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-bg)] transition hover:bg-[var(--color-flame)] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          <span id="generate-label">Generate ✨</span>
+          <span id="generate-label">Generate →</span>
           <span
             id="generate-spinner"
-            class="hidden size-4 animate-spin rounded-full border-2 border-white/40 border-t-white"
+            class="hidden size-3.5 animate-spin rounded-full border-[1.5px] border-[var(--color-bg)]/40 border-t-[var(--color-bg)]"
           ></span>
         </button>
       </form>
-      <p class="mt-2 text-xs text-[var(--color-fg-muted)]">
-        Tip: keep it visual and spatial. The model is automatically nudged toward equirectangular
-        framing.
+      <p
+        class="mt-2.5 font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-faint)]"
+      >
+        — Tip: describe a place, not just an object. The 360° framing is handled for you.
       </p>
     </section>
 
     <!-- Viewer -->
     <section
       id="viewer-section"
-      class="relative aspect-[3/2] w-full overflow-hidden rounded-3xl border border-white/10 bg-black/60 shadow-2xl"
+      class="relative aspect-[3/2] w-full overflow-hidden border border-[var(--color-rule)] bg-[var(--color-bg-deep)]"
     >
       <div id="viewer" class="absolute inset-0" style="touch-action: none;"></div>
+
       <div
         id="viewer-empty"
-        class="absolute inset-0 flex flex-col items-center justify-center gap-3 p-8 text-center"
+        class="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-[var(--color-bg-soft)]/60 p-8 text-center"
       >
-        <div
-          class="size-16 rounded-full bg-gradient-to-br from-[var(--color-accent)]/40 to-transparent blur-xl"
+        <svg
+          class="size-16 text-[var(--color-ink-faint)] sm:size-20"
+          viewBox="-110 -110 220 220"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="0.8"
+          aria-hidden="true"
         >
-        </div>
-        <p class="text-lg font-medium text-white/80">Your panorama will appear here.</p>
-        <p class="max-w-md text-sm text-[var(--color-fg-muted)]">
-          Type a prompt above and tap <em>Generate</em>. Drag to look around. On mobile, tap the
-          gyroscope button to use motion.
+          <circle r="100"></circle>
+          <ellipse rx="100" ry="40"></ellipse>
+          <ellipse rx="40" ry="100"></ellipse>
+          <line x1="-100" y1="0" x2="100" y2="0"></line>
+          <circle r="3" fill="var(--color-flame)" stroke="none"></circle>
+        </svg>
+        <p class="font-display text-2xl text-[var(--color-ink)] sm:text-3xl">
+          <span class="italic">Your next world</span> appears here.
+        </p>
+        <p
+          class="max-w-md font-mono text-[11px] uppercase tracking-[0.16em] text-[var(--color-ink-faint)]"
+        >
+          Drag to look around · pinch to zoom · tilt your phone for gyroscope
         </p>
       </div>
-      <div
-        id="gyro-banner"
-        class="absolute right-3 top-3 hidden flex-col items-end gap-2 sm:items-start"
-      >
+
+      <div id="gyro-banner" class="absolute right-3 top-3 hidden">
         <button
           id="gyro-btn"
           type="button"
-          class="pointer-events-auto rounded-full bg-black/70 px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition hover:bg-black/90"
+          class="pointer-events-auto bg-[var(--color-ink)] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-bg)] shadow-lg transition hover:bg-[var(--color-flame)]"
         >
-          📱 Enable gyroscope
+          Enable gyroscope
         </button>
       </div>
+
       <div
         id="viewer-meta"
-        class="pointer-events-none absolute bottom-0 left-0 right-0 hidden bg-gradient-to-t from-black/80 to-transparent p-4"
+        class="pointer-events-none absolute bottom-0 left-0 right-0 hidden bg-gradient-to-t from-black/85 via-black/40 to-transparent p-4 sm:p-5"
       >
-        <p id="viewer-prompt" class="text-sm text-white/90 sm:text-base [overflow-wrap:anywhere]">
+        <p
+          id="viewer-prompt"
+          class="font-display text-base italic text-white sm:text-lg [overflow-wrap:anywhere]"
+        >
         </p>
-        <div class="mt-2 flex flex-wrap items-center gap-2">
+        <div class="mt-3 flex flex-wrap items-center gap-2">
           <button
             id="download-btn"
             type="button"
-            class="pointer-events-auto rounded-full bg-white/10 px-3 py-1.5 text-xs font-medium text-white backdrop-blur transition hover:bg-white/20"
+            class="pointer-events-auto bg-white/10 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-white backdrop-blur transition hover:bg-[var(--color-flame)]"
           >
-            ⬇ Download
+            ↓ Download
           </button>
         </div>
       </div>
@@ -108,23 +130,29 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
     <!-- Gallery -->
     <section>
-      <div class="mb-3 flex items-end justify-between gap-3">
-        <h2 class="text-lg font-semibold tracking-tight">Your gallery</h2>
+      <div class="mb-4 flex items-end justify-between gap-3">
+        <div class="flex items-baseline gap-3">
+          <h2 class="font-display text-2xl tracking-tight sm:text-3xl">Library</h2>
+          <span id="gallery-count" class="kicker hidden">— 0 worlds</span>
+        </div>
         <button
           id="clear-gallery-btn"
           type="button"
-          class="hidden text-xs text-[var(--color-fg-muted)] underline-offset-4 hover:text-[var(--color-danger)] hover:underline"
+          class="hidden font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-faint)] underline decoration-[var(--color-rule)] underline-offset-[5px] transition hover:text-[var(--color-flame)] hover:decoration-[var(--color-flame)]"
         >
           Clear all
         </button>
       </div>
-      <div id="gallery" class="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+      <div
+        id="gallery"
+        class="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 md:grid-cols-4 lg:grid-cols-5"
+      >
       </div>
       <p
         id="gallery-empty"
-        class="rounded-2xl border border-dashed border-white/10 p-6 text-center text-sm text-[var(--color-fg-muted)]"
+        class="border border-dashed border-[var(--color-rule)] bg-[var(--color-bg-soft)]/40 px-5 py-10 text-center font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-faint)]"
       >
-        Nothing yet — your generated worlds will land here.
+        Empty for now — every world you make lands here.
       </p>
     </section>
   </div>
@@ -133,26 +161,34 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   <div
     id="key-modal"
     aria-hidden="true"
-    class="fixed inset-0 z-40 hidden items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+    class="fixed inset-0 z-40 hidden items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
   >
     <div
-      class="w-full max-w-lg rounded-3xl border border-white/10 bg-[var(--color-bg-soft)] p-6 shadow-2xl sm:p-8"
+      class="w-full max-w-lg border border-[var(--color-rule)] bg-[var(--color-bg-soft)] p-7 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] sm:p-9"
     >
-      <h2 class="text-xl font-semibold tracking-tight">Connect your Replicate key</h2>
-      <p class="mt-2 text-sm text-[var(--color-fg-muted)]">
-        360World is bring-your-own-key. Your token is stored in this browser only and sent straight
-        to Replicate via a thin CORS proxy. Get a token at
+      <span class="kicker">Bring-your-own-key</span>
+      <h2 class="mt-3 font-display text-3xl leading-tight tracking-tight sm:text-4xl">
+        Connect your <span class="italic">Replicate</span> key.
+      </h2>
+      <p class="mt-3 text-sm leading-relaxed text-[var(--color-ink-soft)]">
+        Stored in this browser only. Never logged on our side. Create an account and grab a key at
         <a
-          class="text-[var(--color-accent)] underline decoration-dotted underline-offset-4"
+          class="text-[var(--color-flame)] underline decoration-[var(--color-flame)]/40 underline-offset-[5px] hover:decoration-[var(--color-flame)]"
           href="https://replicate.com/account/api-tokens"
           target="_blank"
           rel="noreferrer noopener">replicate.com/account/api-tokens</a
         >.
       </p>
-      <form id="key-form" class="mt-5 flex flex-col gap-3">
-        <label for="key-input" class="text-xs font-medium uppercase tracking-wide text-white/60"
-          >API token</label
-        >
+      <div class="mt-5 border-l-2 border-[var(--color-flame)] bg-[var(--color-flame)]/5 px-4 py-3">
+        <p class="kicker text-[var(--color-flame)]">Why Replicate?</p>
+        <p class="mt-2 text-[13px] leading-relaxed text-[var(--color-ink-soft)]">
+          Replicate is a hub that hosts image models from many different providers. Plugging in one
+          Replicate key now means 360World can offer you a choice of models later — without ever
+          asking you to juggle multiple accounts.
+        </p>
+      </div>
+      <form id="key-form" class="mt-6 flex flex-col gap-3">
+        <label for="key-input" class="kicker">API token</label>
         <input
           id="key-input"
           type="password"
@@ -160,21 +196,21 @@ import BaseLayout from "../layouts/BaseLayout.astro";
           spellcheck="false"
           required
           placeholder="r8_..."
-          class="rounded-2xl border border-white/10 bg-black/30 px-4 py-3 font-mono text-sm text-white focus:border-[var(--color-accent)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]/30"
+          class="border border-[var(--color-rule)] bg-[var(--color-bg)] px-4 py-3 font-mono text-sm text-[var(--color-ink)] placeholder:text-[var(--color-ink-faint)] focus:border-[var(--color-flame)] focus:outline-none"
         />
         <p
           id="key-error"
-          class="hidden rounded-xl border border-[var(--color-danger)]/40 bg-[var(--color-danger)]/10 px-3 py-2 text-xs text-[var(--color-danger)]"
+          class="hidden border-l-2 border-[var(--color-flame)] bg-[var(--color-flame)]/10 px-3 py-2 text-xs text-[var(--color-flame)]"
         >
         </p>
-        <p class="text-xs text-amber-200/70">
-          ⚠ Stored locally in IndexedDB. Don't use this app on a shared device.
+        <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-[var(--color-ink-faint)]">
+          ⚠ Stored locally — don't use this app on a shared device.
         </p>
-        <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
           <button
             id="forget-key-btn"
             type="button"
-            class="hidden text-xs text-[var(--color-fg-muted)] underline-offset-4 hover:text-[var(--color-danger)] hover:underline"
+            class="hidden font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-ink-faint)] underline decoration-[var(--color-rule)] underline-offset-[5px] transition hover:text-[var(--color-flame)] hover:decoration-[var(--color-flame)]"
           >
             Forget my key
           </button>
@@ -182,14 +218,14 @@ import BaseLayout from "../layouts/BaseLayout.astro";
             <button
               id="key-cancel-btn"
               type="button"
-              class="hidden rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm hover:bg-white/10"
+              class="hidden border border-[var(--color-rule)] bg-transparent px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-ink)] transition hover:border-[var(--color-ink)]"
             >
               Cancel
             </button>
             <button
               type="submit"
               id="key-save-btn"
-              class="rounded-full bg-[var(--color-accent)] px-5 py-2 text-sm font-medium text-white transition hover:bg-[var(--color-accent-strong)] disabled:opacity-60"
+              class="bg-[var(--color-ink)] px-5 py-2.5 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-bg)] transition hover:bg-[var(--color-flame)] disabled:opacity-60"
             >
               Save & continue
             </button>
@@ -204,7 +240,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     id="toast"
     role="status"
     aria-live="polite"
-    class="pointer-events-none fixed bottom-6 left-1/2 z-50 hidden -translate-x-1/2 rounded-full border border-white/15 bg-black/80 px-4 py-2 text-sm text-white shadow-2xl backdrop-blur"
+    class="pointer-events-none fixed bottom-6 left-1/2 z-50 hidden -translate-x-1/2 border border-[var(--color-ink)] bg-[var(--color-ink)] px-4 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-bg)] shadow-2xl"
   >
   </div>
 
@@ -212,6 +248,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     import { apiKeyStore, imagesStore, type StoredImage } from "../lib/storage";
     import { fetchImageBlob, generate360Image } from "../lib/replicate";
     import { downloadBlob, suggestedFilename } from "../lib/download";
+    import { toEquirectangularBlob } from "../lib/equirect";
 
     type ViewerCtor = typeof import("@photo-sphere-viewer/core").Viewer;
     type GyroPlugin = import("@photo-sphere-viewer/gyroscope-plugin").GyroscopePlugin;
@@ -238,6 +275,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       gyroBtn: $<HTMLButtonElement>("gyro-btn"),
       gallery: $<HTMLDivElement>("gallery"),
       galleryEmpty: $<HTMLParagraphElement>("gallery-empty"),
+      galleryCount: $<HTMLSpanElement>("gallery-count"),
       clearGalleryBtn: $<HTMLButtonElement>("clear-gallery-btn"),
       settingsBtn: $<HTMLButtonElement>("settings-btn"),
       keyModal: $<HTMLDivElement>("key-modal"),
@@ -268,20 +306,17 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     function showToast(message: string, kind: "info" | "error" = "info"): void {
       els.toast.textContent = message;
       els.toast.classList.remove("hidden");
-      els.toast.dataset.kind = kind;
-      if (kind === "error") {
-        els.toast.classList.add("border-[var(--color-danger)]/60");
-      } else {
-        els.toast.classList.remove("border-[var(--color-danger)]/60");
-      }
+      els.toast.style.background = kind === "error" ? "var(--color-flame-deep)" : "var(--color-ink)";
+      els.toast.style.color = kind === "error" ? "var(--color-ink)" : "var(--color-bg)";
+      els.toast.style.borderColor = kind === "error" ? "var(--color-flame-deep)" : "var(--color-ink)";
       if (toastTimer) window.clearTimeout(toastTimer);
       toastTimer = window.setTimeout(() => els.toast.classList.add("hidden"), 4500);
     }
 
-    function setBusy(busy: boolean): void {
+    function setBusy(busy: boolean, label = "Generating…"): void {
       els.generateBtn.disabled = busy;
       els.promptInput.disabled = busy;
-      els.generateLabel.textContent = busy ? "Conjuring…" : "Generate ✨";
+      els.generateLabel.textContent = busy ? label : "Generate →";
       els.generateSpinner.classList.toggle("hidden", !busy);
     }
 
@@ -326,14 +361,16 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         URL.revokeObjectURL(viewerObjectUrl);
         viewerObjectUrl = null;
       }
-      viewerObjectUrl = URL.createObjectURL(image.blob);
+      const equirectBlob = await toEquirectangularBlob(image.blob, {
+        type: image.contentType,
+      });
+      viewerObjectUrl = URL.createObjectURL(equirectBlob);
 
       els.viewerEmpty.classList.add("hidden");
       els.viewerMeta.classList.remove("hidden");
       els.viewerPrompt.textContent = image.prompt;
       if (isMobile()) {
         els.gyroBanner.classList.remove("hidden");
-        els.gyroBanner.classList.add("flex");
       }
 
       if (viewerInstance) {
@@ -364,7 +401,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       els.viewerEmpty.classList.remove("hidden");
       els.viewerMeta.classList.add("hidden");
       els.gyroBanner.classList.add("hidden");
-      els.gyroBanner.classList.remove("flex");
     }
 
     async function refreshGallery(): Promise<void> {
@@ -373,29 +409,34 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       if (items.length === 0) {
         els.galleryEmpty.classList.remove("hidden");
         els.clearGalleryBtn.classList.add("hidden");
+        els.galleryCount.classList.add("hidden");
         return;
       }
       els.galleryEmpty.classList.add("hidden");
       els.clearGalleryBtn.classList.remove("hidden");
+      els.galleryCount.classList.remove("hidden");
+      els.galleryCount.textContent = `— ${items.length} world${items.length > 1 ? "s" : ""}`;
 
       const fragment = document.createDocumentFragment();
       for (const item of items) {
         const card = document.createElement("article");
         card.className =
-          "group relative overflow-hidden rounded-2xl border border-white/10 bg-black/40 transition hover:border-white/30";
+          "group relative overflow-hidden border border-[var(--color-rule)] bg-[var(--color-bg-soft)] transition hover:border-[var(--color-flame)] cursor-pointer";
+
         const img = document.createElement("img");
         const objectUrl = URL.createObjectURL(item.blob);
         img.src = objectUrl;
         img.alt = item.prompt;
         img.loading = "lazy";
-        img.className = "aspect-[3/2] w-full object-cover";
+        img.className = "aspect-[3/2] w-full object-cover transition group-hover:scale-[1.02]";
         img.addEventListener("load", () => URL.revokeObjectURL(objectUrl), { once: true });
 
         const overlay = document.createElement("div");
         overlay.className =
-          "pointer-events-none absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/80 via-black/0 to-transparent p-3 opacity-0 transition group-hover:opacity-100";
+          "pointer-events-none absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/85 via-black/0 to-transparent p-3 opacity-0 transition group-hover:opacity-100";
         const caption = document.createElement("p");
-        caption.className = "line-clamp-2 text-xs text-white/90";
+        caption.className =
+          "line-clamp-2 font-display text-[13px] italic text-white sm:text-sm";
         caption.textContent = item.prompt;
         overlay.appendChild(caption);
 
@@ -404,10 +445,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
         const downloadBtn = document.createElement("button");
         downloadBtn.type = "button";
-        downloadBtn.className =
-          "rounded-full bg-black/70 px-2 py-1 text-xs text-white backdrop-blur hover:bg-black";
-        downloadBtn.textContent = "⬇";
         downloadBtn.title = "Download";
+        downloadBtn.className =
+          "bg-[var(--color-bg)]/85 px-2 py-1 font-mono text-[10px] text-[var(--color-ink)] backdrop-blur transition hover:bg-[var(--color-flame)] hover:text-[var(--color-bg)]";
+        downloadBtn.textContent = "↓";
         downloadBtn.addEventListener("click", (e) => {
           e.stopPropagation();
           downloadBlob(item.blob, suggestedFilename(item.prompt));
@@ -415,10 +456,10 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
         const removeBtn = document.createElement("button");
         removeBtn.type = "button";
-        removeBtn.className =
-          "rounded-full bg-black/70 px-2 py-1 text-xs text-white backdrop-blur hover:bg-[var(--color-danger)]";
-        removeBtn.textContent = "✕";
         removeBtn.title = "Remove";
+        removeBtn.className =
+          "bg-[var(--color-bg)]/85 px-2 py-1 font-mono text-[10px] text-[var(--color-ink)] backdrop-blur transition hover:bg-[var(--color-flame-deep)] hover:text-[var(--color-ink)]";
+        removeBtn.textContent = "✕";
         removeBtn.addEventListener("click", async (e) => {
           e.stopPropagation();
           await imagesStore.remove(item.id);
@@ -448,9 +489,18 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       const key = await ensureKey();
       if (!key) return;
 
-      setBusy(true);
+      setBusy(true, "Starting…");
       try {
-        const generated = await generate360Image({ apiKey: key, prompt });
+        const generated = await generate360Image({
+          apiKey: key,
+          prompt,
+          onProgress: (e) => {
+            const seconds = Math.round(e.elapsedMs / 1000);
+            const verb = e.status === "starting" ? "Warming up" : "Painting";
+            setBusy(true, `${verb} · ${seconds}s`);
+          },
+        });
+        setBusy(true, "Downloading…");
         const blob = await fetchImageBlob(generated.url);
         const stored = await imagesStore.add({
           prompt: generated.prompt,
@@ -503,7 +553,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
       }
       try {
         await plugin.start();
-        els.gyroBtn.textContent = "🎯 Gyroscope on";
+        els.gyroBtn.textContent = "Gyroscope on";
       } catch (error) {
         const err = error as Error;
         showToast(err.message ?? "Could not enable gyroscope.", "error");

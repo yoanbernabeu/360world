@@ -1,152 +1,315 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 
-const features = [
+const steps = [
   {
+    n: "01",
     title: "Type a prompt",
-    body: "Describe a place — real, surreal, impossible — and Replicate's gpt-image-2 paints it as a full equirectangular panorama.",
-    icon: "✦",
+    body: "One short line. Real or imaginary, indoor or outdoor — anything you can picture as a place.",
   },
   {
-    title: "Step inside",
-    body: "Every result opens in an interactive 360° viewer. Drag, zoom, or tilt your phone — your gyroscope is invited too.",
-    icon: "◐",
+    n: "02",
+    title: "An AI paints your world",
+    body: "Your words travel to an AI image model and a full panorama comes back, usually in one to two minutes.",
   },
   {
-    title: "Stays on your device",
-    body: "Prompts, images and your API key live in your browser's IndexedDB. No accounts, no servers, no tracking.",
-    icon: "⌂",
+    n: "03",
+    title: "Step inside it",
+    body: "The result opens in a 360° viewer. Drag to look around, pinch to zoom, go fullscreen — or hold your phone up and tilt.",
   },
+];
+
+const examples = [
+  "A neon ramen alley in Tokyo, midnight rain, paper lanterns",
+  "Inside a cathedral made entirely of stained glass at sunrise",
+  "A frozen Saturn observatory looking back at the rings",
+  "A library at the bottom of the sea, schools of fish drifting between shelves",
 ];
 ---
 
 <BaseLayout>
-  <main class="mx-auto max-w-6xl px-6 pb-24 pt-10 sm:pt-16">
-    <header class="flex items-center justify-between gap-4">
-      <a href="/" class="flex items-center gap-2 text-lg font-semibold tracking-tight">
-        <span
-          class="inline-block size-7 rounded-full bg-gradient-to-br from-[var(--color-accent)] to-[#3a1fb0] shadow-[0_0_30px_rgba(124,92,255,0.55)]"
-        ></span>
-        360World
+  <div class="mx-auto flex min-h-svh max-w-[1200px] flex-col px-5 py-6 sm:px-10 sm:py-8">
+    <!-- Top -->
+    <header class="reveal reveal-1 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2.5">
+        <svg
+          class="size-6"
+          viewBox="0 0 64 64"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.6"
+          aria-hidden="true"
+        >
+          <circle cx="32" cy="32" r="22"></circle>
+          <ellipse cx="32" cy="32" rx="22" ry="9"></ellipse>
+          <ellipse cx="32" cy="32" rx="9" ry="22"></ellipse>
+        </svg>
+        <span class="font-display text-xl">360<span class="italic">World</span></span>
       </a>
-      <nav class="flex items-center gap-3 text-sm text-[var(--color-fg-muted)]">
-        <a
-          class="hidden hover:text-white sm:inline"
-          href="https://replicate.com/openai/gpt-image-2"
-          target="_blank"
-          rel="noreferrer noopener">Model</a
-        >
-        <a
-          class="rounded-full bg-[var(--color-accent)] px-4 py-2 font-medium text-white shadow-lg shadow-[var(--color-accent)]/30 transition hover:bg-[var(--color-accent-strong)]"
-          href="/app">Open the app →</a
-        >
-      </nav>
+      <a
+        href="/app"
+        class="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-ink-faint)] transition hover:text-[var(--color-ink)]"
+      >
+        App →
+      </a>
     </header>
 
-    <section class="mt-20 sm:mt-28">
-      <p
-        class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium tracking-wide text-[var(--color-fg-muted)] backdrop-blur"
-      >
-        <span class="size-1.5 rounded-full bg-[var(--color-accent)]"></span>
-        Bring your own Replicate key · No backend
-      </p>
+    <!-- Hero with sphere -->
+    <main class="flex flex-1 flex-col items-center justify-center py-14 text-center sm:py-20">
+      <p class="reveal reveal-1 kicker mb-6">A 360° world generator</p>
+
       <h1
-        class="mt-6 max-w-3xl text-balance text-5xl font-semibold leading-[1.05] tracking-tight sm:text-7xl"
+        class="reveal reveal-2 font-display text-[2.8rem] leading-[0.95] tracking-[-0.01em] text-balance sm:text-[5rem] lg:text-[6.4rem]"
       >
-        Conjure entire worlds, then
-        <span
-          class="bg-gradient-to-br from-[#a48bff] via-[#7c5cff] to-[#3a1fb0] bg-clip-text text-transparent"
-          >step inside.</span
-        >
+        Make a world,
+        <span class="italic text-[var(--color-flame)]">walk into it.</span>
       </h1>
-      <p class="mt-6 max-w-2xl text-pretty text-lg text-[var(--color-fg-muted)] sm:text-xl">
-        360World turns a one-line prompt into a full 360° panorama you can explore from your
-        browser, your phone — even with your gyroscope. Everything happens client-side.
+
+      <!-- Live 360° showcase -->
+      <div class="reveal reveal-3 my-10 w-full max-w-[680px] sm:my-14">
+        <div
+          id="showcase-viewer"
+          class="relative aspect-[3/2] w-full overflow-hidden border border-[var(--color-rule)] bg-[var(--color-bg-deep)]"
+          style="touch-action: none;"
+        >
+          <img
+            id="showcase-fallback"
+            src="/showcase.webp"
+            alt="A solarpunk rooftop garden at golden hour — a 360° world generated in 360World."
+            class="absolute inset-0 h-full w-full object-cover"
+          />
+        </div>
+        <p
+          class="mt-3 text-center font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-ink-faint)]"
+        >
+          — Drag to look around · a world made in 360World
+        </p>
+      </div>
+
+      <p
+        class="reveal reveal-3 mb-10 max-w-md text-[15px] leading-relaxed text-[var(--color-ink-soft)] sm:text-base"
+      >
+        Type one line. Get a full 360° panorama to explore. Drag to look around, or tilt your
+        phone and step inside. Your worlds stay on your device.
       </p>
-      <div class="mt-8 flex flex-wrap items-center gap-3">
+
+      <div class="reveal reveal-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-3">
         <a
           href="/app"
-          class="rounded-full bg-[var(--color-accent)] px-6 py-3 text-base font-medium text-white shadow-lg shadow-[var(--color-accent)]/30 transition hover:bg-[var(--color-accent-strong)]"
+          class="group inline-flex items-center gap-3 bg-[var(--color-ink)] px-7 py-4 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-bg)] transition hover:bg-[var(--color-flame)] hover:text-[var(--color-bg)]"
         >
-          Generate your first world
+          Begin
+          <span class="inline-block transition group-hover:translate-x-1">→</span>
         </a>
         <a
-          href="#how-it-works"
-          class="rounded-full border border-white/10 bg-white/5 px-6 py-3 text-base font-medium text-white/90 backdrop-blur transition hover:bg-white/10"
+          href="#how"
+          class="group inline-flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-ink-soft)] underline decoration-[var(--color-rule)] underline-offset-[6px] transition hover:text-[var(--color-flame)] hover:decoration-[var(--color-flame)]"
         >
           How it works
+          <span class="inline-block transition group-hover:translate-y-0.5">↓</span>
         </a>
       </div>
-    </section>
+    </main>
 
-    <section id="how-it-works" class="mt-24 grid gap-5 sm:mt-32 sm:grid-cols-3">
-      {
-        features.map((feature) => (
-          <article class="rounded-3xl border border-white/10 bg-[var(--color-bg-soft)]/80 p-6 backdrop-blur transition hover:border-white/20">
-            <div class="flex size-10 items-center justify-center rounded-2xl bg-white/5 text-xl text-[var(--color-accent)]">
-              {feature.icon}
-            </div>
-            <h3 class="mt-5 text-lg font-semibold">{feature.title}</h3>
-            <p class="mt-2 text-sm leading-relaxed text-[var(--color-fg-muted)]">{feature.body}</p>
-          </article>
-        ))
-      }
-    </section>
+    <!-- How it works -->
+    <section id="how" class="reveal reveal-4 pt-20 sm:pt-28">
+      <hr class="hairline" />
+      <div class="grid gap-10 pt-12 sm:pt-16 lg:grid-cols-12 lg:gap-16">
+        <header class="lg:col-span-4">
+          <span class="kicker">How it works</span>
+          <h2
+            class="mt-3 font-display text-4xl leading-[1.0] tracking-tight sm:text-5xl"
+          >
+            Three steps,
+            <span class="italic text-[var(--color-flame)]">no friction.</span>
+          </h2>
+          <p class="mt-5 max-w-sm text-[15px] leading-relaxed text-[var(--color-ink-soft)]">
+            No sign-up, no subscription. You plug in your own account and only pay for what you
+            make — usually a few cents per world.
+          </p>
+        </header>
 
-    <section
-      class="mt-20 grid gap-10 rounded-3xl border border-white/10 bg-[var(--color-bg-soft)]/60 p-8 backdrop-blur sm:p-12 lg:grid-cols-[1.1fr_0.9fr]"
-    >
-      <div>
-        <h2 class="text-3xl font-semibold tracking-tight sm:text-4xl">What you'll need</h2>
-        <p class="mt-4 text-[var(--color-fg-muted)]">
-          A Replicate account and an API token. Replicate bills per generation — typically a few US
-          cents per image — directly to your account. 360World never sees your token: it goes from
-          your browser to a thin proxy and straight to Replicate.
-        </p>
-        <ol class="mt-6 space-y-3 text-sm text-[var(--color-fg-muted)]">
-          <li class="flex gap-3">
-            <span class="text-[var(--color-accent)]">1.</span> Create a free account at
-            <a
-              class="underline decoration-dotted underline-offset-4 hover:text-white"
-              href="https://replicate.com"
-              target="_blank"
-              rel="noreferrer noopener">replicate.com</a
-            >.
-          </li>
-          <li class="flex gap-3">
-            <span class="text-[var(--color-accent)]">2.</span> Generate a token at
-            <a
-              class="underline decoration-dotted underline-offset-4 hover:text-white"
-              href="https://replicate.com/account/api-tokens"
-              target="_blank"
-              rel="noreferrer noopener">/account/api-tokens</a
-            >.
-          </li>
-          <li class="flex gap-3">
-            <span class="text-[var(--color-accent)]">3.</span> Paste it once in 360World — it's stored
-            locally in IndexedDB.
-          </li>
+        <ol class="space-y-px bg-[var(--color-rule)] lg:col-span-8">
+          {
+            steps.map((s) => (
+              <li class="bg-[var(--color-bg)] p-6 sm:p-8">
+                <div class="flex items-baseline gap-6">
+                  <span class="font-mono text-sm text-[var(--color-flame)]">{s.n}</span>
+                  <div class="flex-1">
+                    <h3 class="font-display text-2xl leading-tight tracking-tight sm:text-3xl">
+                      {s.title}
+                    </h3>
+                    <p class="mt-2 text-[15px] leading-relaxed text-[var(--color-ink-soft)]">
+                      {s.body}
+                    </p>
+                  </div>
+                </div>
+              </li>
+            ))
+          }
         </ol>
       </div>
-      <aside class="rounded-2xl border border-white/10 bg-black/30 p-6 text-sm">
-        <h3 class="text-base font-semibold text-white">Privacy at a glance</h3>
-        <ul class="mt-4 space-y-3 text-[var(--color-fg-muted)]">
-          <li>· No analytics, no cookies, no tracking pixel.</li>
-          <li>· No database. Your gallery sits in your browser.</li>
-          <li>· The proxy function logs nothing — no key, no prompt.</li>
-          <li>· Open-source. Audit it on GitHub.</li>
-        </ul>
-        <p class="mt-5 text-xs text-amber-200/80">
-          ⚠ Avoid using a shared device — anyone with browser access can read the stored key.
-        </p>
-      </aside>
     </section>
 
-    <footer
-      class="mt-20 flex flex-col items-center justify-between gap-3 text-xs text-[var(--color-fg-muted)] sm:flex-row"
-    >
-      <p>© {new Date().getFullYear()} 360World · MIT licensed</p>
-      <p>Built with Astro, Tailwind, Photo Sphere Viewer & Replicate.</p>
+    <!-- Example prompts -->
+    <section class="pt-20 sm:pt-28">
+      <hr class="hairline" />
+      <div class="pt-12 sm:pt-16">
+        <div class="flex items-baseline justify-between gap-3">
+          <h2 class="font-display text-3xl tracking-tight sm:text-4xl">
+            Worlds <span class="italic">to try.</span>
+          </h2>
+          <span class="kicker hidden sm:inline">— Example prompts</span>
+        </div>
+        <ul class="mt-8 grid gap-px bg-[var(--color-rule)] sm:grid-cols-2">
+          {
+            examples.map((p) => (
+              <li class="bg-[var(--color-bg)] px-5 py-5 sm:px-6 sm:py-6">
+                <p class="font-display text-lg italic leading-snug text-[var(--color-ink)] sm:text-xl">
+                  "{p}"
+                </p>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    <!-- Privacy / what you'll need -->
+    <section class="pt-20 sm:pt-28">
+      <hr class="hairline" />
+      <div class="grid gap-10 pt-12 sm:pt-16 lg:grid-cols-2 lg:gap-16">
+        <div>
+          <span class="kicker">What you'll need</span>
+          <h2 class="mt-3 font-display text-3xl tracking-tight sm:text-4xl">
+            A free Replicate <span class="italic">account.</span>
+          </h2>
+          <p class="mt-4 text-[15px] leading-relaxed text-[var(--color-ink-soft)]">
+            Replicate is the platform we plug into behind the scenes. Create an account, grab a
+            key, paste it in. Replicate bills you directly — a few cents per world — and we never
+            see your key: it stays in your browser.
+          </p>
+          <a
+            href="https://replicate.com/account/api-tokens"
+            target="_blank"
+            rel="noreferrer noopener"
+            class="mt-6 inline-flex items-center gap-3 border border-[var(--color-rule)] bg-transparent px-5 py-3 font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-ink)] transition hover:border-[var(--color-flame)] hover:text-[var(--color-flame)]"
+          >
+            Create an account →
+          </a>
+        </div>
+        <div>
+          <span class="kicker">Privacy</span>
+          <ul class="mt-4 space-y-3 text-[15px] leading-relaxed text-[var(--color-ink-soft)]">
+            <li class="flex gap-3">
+              <span class="text-[var(--color-flame)]">·</span>
+              No analytics. No cookies. No tracking pixels.
+            </li>
+            <li class="flex gap-3">
+              <span class="text-[var(--color-flame)]">·</span>
+              No database. Your library lives in this browser, full stop.
+            </li>
+            <li class="flex gap-3">
+              <span class="text-[var(--color-flame)]">·</span>
+              Nothing logged on our side — not your key, not your prompts.
+            </li>
+            <li class="flex gap-3">
+              <span class="text-[var(--color-flame)]">·</span>
+              Open source under MIT. Audit the code.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="pt-20 sm:pt-28">
+      <hr class="hairline" />
+      <div
+        class="flex flex-col items-start justify-between gap-4 py-8 text-[12px] text-[var(--color-ink-faint)] sm:flex-row sm:items-center"
+      >
+        <p>
+          Your key and your worlds stay on your device.
+        </p>
+        <a
+          href="/app"
+          class="font-mono text-[11px] uppercase tracking-[0.2em] text-[var(--color-flame)] underline decoration-[var(--color-flame)]/40 underline-offset-[6px] hover:decoration-[var(--color-flame)]"
+        >
+          Open the app →
+        </a>
+        <p class="font-mono text-[10px] uppercase tracking-[0.2em]">
+          © 2026 ·
+          <a
+            href="http://yoandev.co"
+            target="_blank"
+            rel="noreferrer noopener"
+            class="underline decoration-[var(--color-rule)] underline-offset-[4px] transition hover:text-[var(--color-flame)] hover:decoration-[var(--color-flame)]"
+          >
+            Yoan Bernabeu
+          </a>
+          · MIT
+        </p>
+      </div>
     </footer>
-  </main>
+  </div>
+
+  <script>
+    import { toEquirectangularBlob } from "../lib/equirect";
+
+    const container = document.getElementById("showcase-viewer");
+    const fallback = document.getElementById("showcase-fallback");
+    if (container && fallback) {
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      void (async () => {
+        const [{ Viewer }, sourceBlob] = await Promise.all([
+          import("@photo-sphere-viewer/core"),
+          fetch("/showcase.webp").then((r) => r.blob()),
+        ]);
+        const equirectBlob = await toEquirectangularBlob(sourceBlob, { type: "image/webp" });
+        const panoramaUrl = URL.createObjectURL(equirectBlob);
+
+        const viewer = new Viewer({
+          container: container as HTMLElement,
+          panorama: panoramaUrl,
+          navbar: false,
+          defaultZoomLvl: 0,
+          mousewheel: false,
+          keyboard: false,
+          loadingImg: undefined,
+        });
+
+        viewer.addEventListener("ready", () => fallback.remove(), { once: true });
+
+        let autoRotate = !reducedMotion;
+        let resumeTimer: number | null = null;
+
+        const tick = (): void => {
+          if (autoRotate) {
+            const pos = viewer.getPosition();
+            viewer.rotate({ yaw: pos.yaw + 0.0009, pitch: 0 });
+          }
+          requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+
+        const pause = (): void => {
+          autoRotate = false;
+          if (resumeTimer) window.clearTimeout(resumeTimer);
+        };
+        const scheduleResume = (): void => {
+          if (reducedMotion) return;
+          if (resumeTimer) window.clearTimeout(resumeTimer);
+          resumeTimer = window.setTimeout(() => {
+            autoRotate = true;
+          }, 4500);
+        };
+
+        container.addEventListener("pointerdown", pause);
+        container.addEventListener("pointerup", scheduleResume);
+        container.addEventListener("pointercancel", scheduleResume);
+        container.addEventListener("pointerleave", scheduleResume);
+      })();
+    }
+  </script>
 </BaseLayout>

@@ -94,6 +94,14 @@ Generated panoramas are multi-megabyte Blobs; localStorage would either choke or
 **Can I encrypt the key?**
 Encryption without a user passphrase only adds friction — the decryption key would sit next to it. A passphrase mode is on the post-V1 wishlist.
 
+## Contributing
+
+Issues and pull requests are welcome. By participating in this project you agree to abide by its [Code of Conduct](./CODE_OF_CONDUCT.md).
+
+## Author
+
+Made by [Yoan Bernabeu](http://yoandev.co).
+
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+MIT © 2026 Yoan Bernabeu — see [LICENSE](./LICENSE).
