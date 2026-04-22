@@ -29,27 +29,38 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
       </a>
     </header>
 
-    <section>
-      <p id="viewer-kicker" class="kicker">Shared world</p>
-      <h1
-        id="viewer-title"
-        class="mt-2 font-display text-3xl leading-tight tracking-tight sm:text-4xl"
-      >
-        <span class="italic">Loading</span>…
-      </h1>
-    </section>
-
     <section
       id="viewer-section"
       class="relative aspect-[3/2] w-full overflow-hidden border border-[var(--color-rule)] bg-[var(--color-bg-deep)]"
     >
       <div id="viewer" class="absolute inset-0" style="touch-action: none;"></div>
+      <div id="gyro-banner" class="absolute right-3 top-3 hidden">
+        <button
+          id="gyro-btn"
+          type="button"
+          class="pointer-events-auto bg-[var(--color-ink)] px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--color-bg)] shadow-lg transition hover:bg-[var(--color-flame)]"
+        >
+          Enable gyroscope
+        </button>
+      </div>
       <div
         id="viewer-error"
         class="absolute inset-0 hidden flex-col items-center justify-center gap-3 bg-[var(--color-bg-soft)]/60 p-8 text-center"
       >
         <p id="viewer-error-text" class="font-display text-xl text-[var(--color-ink)]"></p>
       </div>
+    </section>
+
+    <section
+      class="flex flex-col gap-2 border-l-2 border-[var(--color-flame)] bg-[var(--color-bg-soft)]/60 px-4 py-3 sm:px-5 sm:py-4"
+    >
+      <p id="viewer-kicker" class="kicker">Shared world</p>
+      <h1
+        id="viewer-title"
+        class="font-display text-2xl leading-tight tracking-tight text-[var(--color-ink)] sm:text-3xl [overflow-wrap:anywhere]"
+      >
+        <span class="italic">Loading</span>…
+      </h1>
     </section>
 
     <section>
@@ -67,6 +78,7 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
     import { fetchPublicManifest, rawImageUrl, siteGalleryUrl } from "../../../lib/github";
 
     type ViewerCtor = typeof import("@photo-sphere-viewer/core").Viewer;
+    type GyroPlugin = import("@photo-sphere-viewer/gyroscope-plugin").GyroscopePlugin;
 
     const $ = <T extends HTMLElement>(id: string): T => {
       const el = document.getElementById(id);
@@ -81,7 +93,12 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
       error: $<HTMLDivElement>("viewer-error"),
       errorText: $<HTMLParagraphElement>("viewer-error-text"),
       backLink: $<HTMLAnchorElement>("back-link"),
+      gyroBanner: $<HTMLDivElement>("gyro-banner"),
+      gyroBtn: $<HTMLButtonElement>("gyro-btn"),
     };
+
+    let viewerInstance: InstanceType<ViewerCtor> | null = null;
+    let gyroModule: typeof import("@photo-sphere-viewer/gyroscope-plugin") | null = null;
 
     function parsePath(): { username: string; slug: string } | null {
       const match = window.location.pathname.match(/^\/u\/([^/]+)\/view\/([^/]+)\/?$/);
@@ -99,19 +116,43 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
       els.errorText.textContent = message;
     }
 
+    function isTouchDevice(): boolean {
+      return window.matchMedia("(pointer: coarse)").matches;
+    }
+
     async function mountViewer(url: string): Promise<void> {
       const { Viewer } = (await import("@photo-sphere-viewer/core")) as { Viewer: ViewerCtor };
-      const { GyroscopePlugin } = await import("@photo-sphere-viewer/gyroscope-plugin");
+      gyroModule = await import("@photo-sphere-viewer/gyroscope-plugin");
 
-      new Viewer({
+      viewerInstance = new Viewer({
         container: els.viewer,
         panorama: url,
         navbar: ["zoom", "move", "fullscreen"],
         defaultPitch: 0,
         defaultYaw: 0,
-        plugins: [[GyroscopePlugin, { touchmove: true }]],
+        plugins: [[gyroModule.GyroscopePlugin, { touchmove: true }]],
       });
+
+      if (isTouchDevice()) {
+        els.gyroBanner.classList.remove("hidden");
+      }
     }
+
+    async function enableGyroscope(): Promise<void> {
+      if (!viewerInstance || !gyroModule) return;
+      const plugin = viewerInstance.getPlugin(gyroModule.GyroscopePlugin) as GyroPlugin | null;
+      if (!plugin) return;
+      try {
+        await plugin.start();
+        els.gyroBtn.textContent = "Gyroscope on";
+        els.gyroBtn.disabled = true;
+      } catch (err) {
+        const e = err as Error;
+        els.gyroBtn.textContent = e.message ?? "Gyroscope unavailable";
+      }
+    }
+
+    els.gyroBtn.addEventListener("click", () => void enableGyroscope());
 
     void (async () => {
       const parsed = parsePath();
