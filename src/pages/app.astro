@@ -240,7 +240,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   <div
     id="key-modal"
     aria-hidden="true"
-    class="fixed inset-0 z-40 hidden items-center justify-center overflow-y-auto bg-black/75 p-4 backdrop-blur-sm"
+    class="fixed inset-0 z-[100] hidden items-center justify-center overflow-y-auto bg-black/75 p-4 backdrop-blur-sm"
   >
     <div
       class="my-8 w-full max-w-lg border border-[var(--color-rule)] bg-[var(--color-bg-soft)] p-7 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.8)] sm:p-9"
@@ -363,17 +363,38 @@ import BaseLayout from "../layouts/BaseLayout.astro";
         <p class="kicker">GitHub publish (optional)</p>
         <p class="mt-1 text-[13px] leading-relaxed text-[var(--color-ink-soft)]">
           Publish your worlds to a public GitHub repo so you can share them via
-          <code class="font-mono text-[12px]">360world.yoandev.co/u/&lt;you&gt;</code>. Create a
-          <strong>public</strong> repo named
-          <code class="font-mono text-[12px]">360world-data</code>, then generate a
-          <a
-            class="text-[var(--color-flame)] underline decoration-[var(--color-flame)]/40 underline-offset-[5px] hover:decoration-[var(--color-flame)]"
-            href="https://github.com/settings/personal-access-tokens/new"
-            target="_blank"
-            rel="noreferrer noopener">Fine-grained PAT</a
-          > scoped to that single repo with <span class="font-mono">Contents: Read &amp; write</span
-          >.
+          <code class="font-mono text-[12px]">360world.yoandev.co/u/&lt;you&gt;</code>.
         </p>
+        <ol
+          class="mt-3 list-decimal space-y-1.5 pl-5 text-[13px] leading-relaxed text-[var(--color-ink-soft)] marker:font-mono marker:text-[var(--color-flame)]"
+        >
+          <li>
+            <a
+              class="text-[var(--color-flame)] underline decoration-[var(--color-flame)]/40 underline-offset-[4px] hover:decoration-[var(--color-flame)]"
+              href="https://github.com/new"
+              target="_blank"
+              rel="noreferrer noopener">Create a new GitHub repo</a
+            > named <strong><code class="font-mono text-[12px]">360world-data</code></strong>, set
+            it to <strong>Public</strong>, and <strong>tick "Add a README file"</strong> so the repo has
+            an initial commit (otherwise the first publish starts from a blank branch).
+          </li>
+          <li>
+            <a
+              class="text-[var(--color-flame)] underline decoration-[var(--color-flame)]/40 underline-offset-[4px] hover:decoration-[var(--color-flame)]"
+              href="https://github.com/settings/personal-access-tokens/new"
+              target="_blank"
+              rel="noreferrer noopener">Generate a Fine-grained PAT</a
+            > — under <em>Repository access</em> pick <strong>Only select repositories</strong> and choose
+            <code class="font-mono text-[12px]">360world-data</code>. Under
+            <em>Permissions</em> → Repository, grant
+            <strong><span class="font-mono">Contents: Read and write</span></strong>.
+          </li>
+          <li>
+            Paste your GitHub username and the PAT below, then hit
+            <strong>Test &amp; save</strong>. The token stays in this browser (IndexedDB) — it never
+            leaves your machine.
+          </li>
+        </ol>
         <div
           id="github-profile-link-wrapper"
           class="mt-3 hidden flex-col gap-2 border-l-2 border-emerald-500/70 bg-emerald-500/5 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
@@ -515,7 +536,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     id="toast"
     role="status"
     aria-live="polite"
-    class="pointer-events-none fixed bottom-6 left-1/2 z-50 hidden -translate-x-1/2 border border-[var(--color-ink)] bg-[var(--color-ink)] px-4 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-bg)] shadow-2xl"
+    class="pointer-events-none fixed bottom-6 left-1/2 z-[110] hidden -translate-x-1/2 border border-[var(--color-ink)] bg-[var(--color-ink)] px-4 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--color-bg)] shadow-2xl"
   >
   </div>
 
