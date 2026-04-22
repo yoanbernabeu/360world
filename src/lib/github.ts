@@ -152,12 +152,45 @@ export async function validateConfig(config: GithubConfig): Promise<ValidationRe
 }
 
 export async function fetchPublicManifest(username: string): Promise<Manifest> {
-  const resp = await fetch(rawManifestUrl(username), {
-    cache: "no-store",
-  });
-  if (resp.status === 404) {
+  // Prefer the Contents API: raw.githubusercontent.com caches for ~5 minutes,
+  // which makes freshly-published worlds invisible. The API is fresher but is
+  // rate-limited to 60 req/h per IP for anonymous callers — fall back to raw
+  // (stale but unlimited) if we hit the limit.
+  try {
+    const resp = await fetch(
+      `${GITHUB_API}/repos/${username}/${GITHUB_REPO}/contents/${MANIFEST_PATH}`,
+      {
+        headers: {
+          Accept: "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+        cache: "no-store",
+      },
+    );
+    if (resp.status === 404) {
+      return { version: MANIFEST_VERSION, items: [] };
+    }
+    if (resp.status === 403 || resp.status === 429) {
+      return fetchPublicManifestViaRaw(username);
+    }
+    if (!resp.ok) {
+      throw new GithubError(`Could not load manifest (${resp.status}).`, resp.status);
+    }
+    const data = (await resp.json()) as { content?: string; encoding?: string };
+    if (!data.content || data.encoding !== "base64") {
+      return { version: MANIFEST_VERSION, items: [] };
+    }
+    const json = base64ToUtf8(data.content.replace(/\n/g, ""));
+    return normalizeManifest(JSON.parse(json) as Manifest);
+  } catch (err) {
+    if (err instanceof GithubError) throw err;
     return { version: MANIFEST_VERSION, items: [] };
   }
+}
+
+async function fetchPublicManifestViaRaw(username: string): Promise<Manifest> {
+  const resp = await fetch(rawManifestUrl(username), { cache: "no-store" });
+  if (resp.status === 404) return { version: MANIFEST_VERSION, items: [] };
   if (!resp.ok) {
     throw new GithubError(`Could not load manifest (${resp.status}).`, resp.status);
   }

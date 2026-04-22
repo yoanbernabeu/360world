@@ -153,6 +153,22 @@ describe("validateConfig", () => {
 });
 
 describe("fetchPublicManifest", () => {
+  function manifestContents(payload: unknown): Response {
+    return jsonResponse({
+      encoding: "base64",
+      content: utf8ToBase64(JSON.stringify(payload)),
+    });
+  }
+
+  it("hits the Contents API (not raw) so the CDN 5-minute cache is bypassed", async () => {
+    fetchMock.mockResolvedValueOnce(manifestContents({ version: 1, items: [] }));
+    await fetchPublicManifest("alice");
+    const [url] = fetchMock.mock.calls[0]!;
+    expect(String(url)).toBe(
+      "https://api.github.com/repos/alice/360world-data/contents/index.json",
+    );
+  });
+
   it("returns empty manifest on 404", async () => {
     fetchMock.mockResolvedValueOnce(emptyResponse(404));
     const m = await fetchPublicManifest("alice");
@@ -161,7 +177,7 @@ describe("fetchPublicManifest", () => {
 
   it("parses and normalizes items", async () => {
     fetchMock.mockResolvedValueOnce(
-      jsonResponse({
+      manifestContents({
         version: 1,
         items: [
           { slug: "s1", prompt: "p1", finalPrompt: "f1", createdAt: 1 },
@@ -179,7 +195,44 @@ describe("fetchPublicManifest", () => {
   });
 
   it("falls back to empty items when the payload is malformed", async () => {
-    fetchMock.mockResolvedValueOnce(jsonResponse({ version: 1 }));
+    fetchMock.mockResolvedValueOnce(manifestContents({ version: 1 }));
+    const m = await fetchPublicManifest("alice");
+    expect(m).toEqual({ version: 1, items: [] });
+  });
+
+  it("falls back to empty items when the response has no content", async () => {
+    fetchMock.mockResolvedValueOnce(jsonResponse({ encoding: "base64" }));
+    const m = await fetchPublicManifest("alice");
+    expect(m).toEqual({ version: 1, items: [] });
+  });
+
+  it("falls back to empty items when base64 is not valid JSON", async () => {
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({ encoding: "base64", content: utf8ToBase64("not-json") }),
+    );
+    const m = await fetchPublicManifest("alice");
+    expect(m).toEqual({ version: 1, items: [] });
+  });
+
+  it("falls back to the raw CDN when the API rate-limits (403)", async () => {
+    // API responds with rate limit
+    fetchMock.mockResolvedValueOnce(emptyResponse(403));
+    // Raw CDN responds with the manifest JSON directly
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({
+        version: 1,
+        items: [{ slug: "s", prompt: "p", finalPrompt: "f", createdAt: 1 }],
+      }),
+    );
+
+    const m = await fetchPublicManifest("alice");
+    expect(m.items).toHaveLength(1);
+    expect(String(fetchMock.mock.calls[1]![0])).toContain("raw.githubusercontent.com");
+  });
+
+  it("falls back to the raw CDN on 429 as well", async () => {
+    fetchMock.mockResolvedValueOnce(emptyResponse(429));
+    fetchMock.mockResolvedValueOnce(jsonResponse({ version: 1, items: [] }));
     const m = await fetchPublicManifest("alice");
     expect(m).toEqual({ version: 1, items: [] });
   });
